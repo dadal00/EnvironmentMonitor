@@ -10,18 +10,21 @@ interface ImageButtonProps {
 
 const ImageButton: React.FC<ImageButtonProps> = ({ onPress, imageUri, buttonStyle, imageStyle }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.button, buttonStyle]}>
-      <Image source={{uri: imageUri}} style={[styles.image, imageStyle]} />
+    <TouchableOpacity onPress={onPress} style={[buttonStyle ? buttonStyle: styles.button]}>
+      <Image source={{uri: imageUri}}
+        style={[imageStyle ? imageStyle : styles.image]} 
+        resizeMode='contain'
+        />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    button: {
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
   image: {
     width: 50,
     height: 50,
