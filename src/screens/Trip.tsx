@@ -1,8 +1,9 @@
 import React from 'react';
-import { Button, View, Text, StyleSheet, Dimensions } from 'react-native';
-import { RootStackParamList } from './App';
+import { Button, View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationButton from './NavigationButton';
+import NavigationButton from '../components/NavigationButton';
+import TripIcon from '../components/TripIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -18,8 +19,14 @@ const TripScreen = ({ navigation}: Props ) => {
                 buttonStyle={styles.navButton}
                 imageStyle={styles.navButton_image}
             />
+            <View>
+                <TripIcon
+                    onPress={() => navigation.navigate('Fridge')}
+                    imageUri={'default_trip_icon'}
+                />
+            </View>
         </View>
-     );
+    );
 };
 
 const styles = StyleSheet.create({

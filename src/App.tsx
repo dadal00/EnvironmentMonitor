@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import TripScreen from './Trip';
-import FridgeScreen from './Fridge';
+import TripScreen from './screens/Trip';
+import FridgeScreen from './screens/Fridge';
 
 export type RootStackParamList = {
   Trip: undefined;
