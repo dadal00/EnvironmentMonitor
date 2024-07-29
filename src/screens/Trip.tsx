@@ -4,7 +4,6 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationButton from '../components/NavigationButton';
 import TripIcon from '../components/TripIcon';
-import LinearGradient from 'react-native-linear-gradient';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
         // paddingHorizontal: SCREEN_WIDTH * 0.02,
     },
     plus_sign: {
-        fontSize: SCREEN_WIDTH * 0.06,
+        fontSize: SCREEN_WIDTH * 0.07,
         // fontWeight: '700',
         fontFamily: 'DMSans-Bold',
     },
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#BFBEB5',
         borderRadius: BORDER_RAD,
-        padding: SCREEN_WIDTH * 0.025,
+        padding: SCREEN_WIDTH * 0.02,
         // paddingHorizontal: SCREEN_WIDTH * 0.06,
         marginBottom: SCREEN_WIDTH * 0.03,
     },
