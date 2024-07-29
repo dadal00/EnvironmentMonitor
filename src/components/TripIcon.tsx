@@ -11,7 +11,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CircularImageWithShadow: React.FC<CircularImageButtonProps> =  ({ imageUri, onPress }) => {
     return (
         <TouchableOpacity onPress={onPress} style={styles.container}>
-         <View style={styles.shadow}/>
+         {/* <View style={styles.shadow}/> */}
          <Image
             source={{ uri: imageUri }}
             style={styles.image}
@@ -24,26 +24,25 @@ const CircularImageWithShadow: React.FC<CircularImageButtonProps> =  ({ imageUri
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    width: SCREEN_WIDTH * 0.26, // Set width and height according to your needs
-    height: SCREEN_WIDTH * 0.26,
+    width: SCREEN_WIDTH * 0.24, // Set width and height according to your needs
+    height: SCREEN_WIDTH * 0.24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4D3CB',
+        shadowOffset: { width: SCREEN_WIDTH * 0.01, height: SCREEN_WIDTH * 0.009 },
+        shadowOpacity: 1,
+        shadowRadius: 0, 
+      }
+    }), 
   },
   image: {
     width: '100%',
     height: '100%',
-    borderRadius: SCREEN_WIDTH * 0.13, // Make the image circular
+    borderRadius: SCREEN_WIDTH * 0.12, // Make the image circular
     borderColor: 'transparent', // Optional: Remove any default border
     borderWidth: 0,
     backgroundColor: 'white',
-  },
-  shadow: {
-    position: 'absolute',
-    bottom: -SCREEN_WIDTH * 0.01,
-    right: -SCREEN_WIDTH * 0.01,
-    width: '100%', // Adjust as needed
-    height: '100%', // Adjust as needed
-    borderRadius: 50,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Shadow color
-    opacity: 0.5,
+    
   },
 });
 

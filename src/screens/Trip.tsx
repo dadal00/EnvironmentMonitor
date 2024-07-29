@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationButton from '../components/NavigationButton';
@@ -44,19 +44,164 @@ const TripScreen = ({ navigation}: Props ) => {
                     </View>
                 </View>
             </View>
+            <View style={styles.middleContainer}>
+                <ScrollView>
+                    <View style={styles.groceryList}>
+                        <View style={styles.wrapper}>
+                            <Text
+                                style={styles.groceryList_title}
+                            >Costco</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'existing_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                            <Text style={styles.bullet_text}>Bananas</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'existing_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                            <Text style={styles.bullet_text}>Chicken Breasts</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'existing_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                            <Text style={styles.bullet_text}>Ground Beef</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'existing_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                            <Text style={styles.bullet_text}>Milk</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'existing_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                            <Text style={styles.bullet_text}>Eggs</Text>
+                        </View>
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'new_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.unopened_list}>
+                        <View style={styles.caveInCorner} />
+                        <Text style={styles.unopened_title}>Target</Text>
+                    </View>
+                </ScrollView>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    caveInCorner: {
+        width: SCREEN_WIDTH * 0.08,
+        height: SCREEN_WIDTH * 0.08,
+        backgroundColor: 'white', // same as the background color of the parent container
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        borderTopRightRadius: 25,
+        // transform: [{ rotate: '45deg' }],
+        // overflow:'visible',
+    },
+    unopened_title: {
+        marginHorizontal: SCREEN_WIDTH * 0.05,
+        fontSize: SCREEN_WIDTH * 0.08,
+        fontWeight: '400',
+    },
+    unopened_list: {
+        marginTop: SCREEN_WIDTH * 0.03,
+        width: '98.5%',
+        flexGrow: 1,
+        backgroundColor: '#E0E0D9',
+        borderRadius: SCREEN_WIDTH * 0.05,
+        padding: SCREEN_WIDTH * 0.02,
+        paddingHorizontal: SCREEN_WIDTH * 0.06,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#D9D8D0',
+                shadowOffset: { width: SCREEN_WIDTH * 0.01, height: SCREEN_WIDTH * 0.01 },
+                shadowOpacity: 1,
+                shadowRadius: 0, 
+            }
+        }), 
+    },
+    bullet_text: {
+        marginLeft: SCREEN_WIDTH * 0.035,
+        fontSize: SCREEN_WIDTH * 0.04,
+    },
+    bullet_pic: {
+        width: '60%',
+        height: '50%',
+    },
+    bullet_block: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: SCREEN_WIDTH * 0.13,
+        height: SCREEN_WIDTH * 0.09,
+        borderRightColor: '#BFBEB5',
+        borderRightWidth: SCREEN_WIDTH * 0.005,
+    },
+    existing_item: {
+        borderBottomColor: '#BFBEB5',
+        borderBottomWidth: SCREEN_WIDTH * 0.005,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    wrapper: {
+        borderBottomColor: '#BFBEB5',
+        borderBottomWidth: SCREEN_WIDTH * 0.005,
+    },
+    groceryList_title: {
+        fontSize: SCREEN_WIDTH * 0.075,
+        fontWeight: '400',
+        marginHorizontal: SCREEN_WIDTH * 0.05,
+        marginBottom: SCREEN_WIDTH * 0.02,
+    },
+    groceryList: {
+        width:'98.5%',
+        flexGrow: 1,
+        backgroundColor: '#E0E0D9',
+        borderRadius: SCREEN_WIDTH * 0.05,
+        padding: SCREEN_WIDTH * 0.04,
+        paddingHorizontal: SCREEN_WIDTH * 0.06,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#D9D8D0',
+                shadowOffset: { width: SCREEN_WIDTH * 0.01, height: SCREEN_WIDTH * 0.01 },
+                shadowOpacity: 1,
+                shadowRadius: 0, 
+            }
+        }), 
+        paddingBottom: SCREEN_WIDTH * 0.065,
+    },
+    middleContainer: {
+        width: '87%',
+        height: '55%',
+        alignSelf: 'center',
+    },
     tag: {
         flexShrink: 1,
         padding: SCREEN_WIDTH * 0.01,
         paddingHorizontal: SCREEN_WIDTH * 0.02,
-        // paddingEnd: SCREEN_WIDTH * 0.03,
-        // paddingStart: SCREEN_WIDTH * 0.025,
-        // width: SCREEN_WIDTH * 0.30,
-        // height: SCREEN_WIDTH * 0.065,
         backgroundColor: '#BFBEB5',
         borderRadius: SCREEN_WIDTH * 0.06,
         position: 'relative',
@@ -64,14 +209,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: SCREEN_WIDTH * 0.02,
-        // padding: SCREEN_WIDTH * 0.01,
     },
     tag_pic: {
-        // padding: SCREEN_WIDTH * 0.01,
         width: SCREEN_WIDTH * 0.04,
         height: SCREEN_WIDTH * 0.05,
         marginRight: SCREEN_WIDTH * 0.025,
-        // backgroundColor: 'white',
     },
     tag_text: {
         fontSize: SCREEN_WIDTH * 0.035,
@@ -88,19 +230,19 @@ const styles = StyleSheet.create({
     },
     trip_header: {
         position: 'relative',
-        // alignItems: 'center',
-        // justifyContent: 'center',
         marginLeft: SCREEN_WIDTH * 0.05,
         flexDirection: 'column',
     },
     topBar: {
         position:'relative',
         width: '87%',
-        height: '16%',
-        backgroundColor: 'white',
+        height: '15%',
+        // backgroundColor: 'white',
         alignItems: 'center',
         alignSelf: 'center',
         flexDirection: 'row',
+        marginBottom: SCREEN_WIDTH * 0.04,
+        marginTop: -SCREEN_WIDTH * 0.04,
     },
     container: {
         ...StyleSheet.absoluteFillObject,
@@ -116,7 +258,7 @@ const styles = StyleSheet.create({
     navButton_image: {
         marginTop: SCREEN_HEIGHT * 0.05,
         marginRight: SCREEN_WIDTH * 0.03,
-        height: SCREEN_WIDTH * 0.08,
+        height: SCREEN_WIDTH * 0.07,
         width: '100%',
         aspectRatio: 1,
     }
