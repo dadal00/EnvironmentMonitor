@@ -4,11 +4,13 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationButton from '../components/NavigationButton';
 import TripIcon from '../components/TripIcon';
+import LinearGradient from 'react-native-linear-gradient';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BORDER_RAD = SCREEN_WIDTH * 0.03;
 
 const TripScreen = ({ navigation}: Props ) => {
     return (
@@ -101,38 +103,105 @@ const TripScreen = ({ navigation}: Props ) => {
                         </View>
                     </View>
                     <View style={styles.unopened_list}>
-                        <View style={styles.caveInCorner} />
+                        <View style={styles.caveInCorner}>
+                            <View style={styles.triangle}/>
+                        </View>
                         <Text style={styles.unopened_title}>Target</Text>
                     </View>
+                    <View style={styles.unopened_list}>
+                        <View style={styles.caveInCorner}>
+                            <View style={styles.triangle}/>
+                        </View>
+                        <Text style={styles.unopened_title}>Trader Joe's</Text>
+                    </View>
                 </ScrollView>
+            </View>
+            <View style={styles.bottom_container}>
+                <View style={styles.new_store}>
+                    <Text style={styles.plus_sign}>+</Text>
+                </View>
+                <View style={styles.finish_trip}>
+                    <Text style={styles.finish_text}>Finish Trip!</Text>
+                </View>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    caveInCorner: {
-        width: SCREEN_WIDTH * 0.08,
-        height: SCREEN_WIDTH * 0.08,
-        backgroundColor: 'white', // same as the background color of the parent container
+    finish_text: {
+        color: '#F8F8F8',
+        fontSize: SCREEN_WIDTH * 0.045,
+        fontWeight: '500',
+        fontFamily: 'DMSans-Regular',
+    },
+    bottom_container: {
+        width: '87%',
+        alignSelf: 'center',
+    },
+    finish_trip: {
+        alignSelf: 'flex-end',
+        width: '40%',
+        backgroundColor: '#2F2F2F',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: SCREEN_WIDTH * 0.04,
+        padding: SCREEN_WIDTH * 0.026,
+        // paddingHorizontal: SCREEN_WIDTH * 0.02,
+    },
+    plus_sign: {
+        fontSize: SCREEN_WIDTH * 0.06,
+        // fontWeight: '700',
+        fontFamily: 'DMSans-Bold',
+    },
+    new_store: {
+        width: '99.5%',
+        alignSelf: 'center',
+        // flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#BFBEB5',
+        borderRadius: BORDER_RAD,
+        padding: SCREEN_WIDTH * 0.025,
+        // paddingHorizontal: SCREEN_WIDTH * 0.06,
+        marginBottom: SCREEN_WIDTH * 0.03,
+    },
+    triangle: {
+        width: 0,
+        height: 0,
+        borderLeftWidth: Math.ceil(SCREEN_WIDTH * 0.085),
+        borderBottomWidth: Math.ceil(SCREEN_WIDTH * 0.085),
+        borderLeftColor: 'transparent',
+        borderBottomColor: 'white', // Color of the triangle
         position: 'absolute',
         top: 0,
         right: 0,
-        borderTopRightRadius: 25,
+        transform: [{ rotate: '-90deg' }],
+    },
+    caveInCorner: {
+        width: Math.ceil(SCREEN_WIDTH * 0.085),
+        height: Math.ceil(SCREEN_WIDTH * 0.085),
+        backgroundColor: '#BFBEB5', // same as the background color of the parent container
+        position: 'absolute',
+        top: 0,
+        right: -SCREEN_WIDTH * 0.01,
+        borderBottomLeftRadius: BORDER_RAD,
         // transform: [{ rotate: '45deg' }],
         // overflow:'visible',
     },
     unopened_title: {
         marginHorizontal: SCREEN_WIDTH * 0.05,
-        fontSize: SCREEN_WIDTH * 0.08,
-        fontWeight: '400',
+        fontSize: SCREEN_WIDTH * 0.07,
+        // fontWeight: '400',
+        fontFamily: 'DMSans-Medium',
     },
     unopened_list: {
-        marginTop: SCREEN_WIDTH * 0.03,
+        // marginTop: SCREEN_WIDTH * 0.03,
+        marginBottom: SCREEN_WIDTH * 0.03,
         width: '98.5%',
         flexGrow: 1,
         backgroundColor: '#E0E0D9',
-        borderRadius: SCREEN_WIDTH * 0.05,
+        borderRadius: BORDER_RAD,
         padding: SCREEN_WIDTH * 0.02,
         paddingHorizontal: SCREEN_WIDTH * 0.06,
         ...Platform.select({
@@ -147,6 +216,7 @@ const styles = StyleSheet.create({
     bullet_text: {
         marginLeft: SCREEN_WIDTH * 0.035,
         fontSize: SCREEN_WIDTH * 0.04,
+        fontFamily: 'DMSans-Regular',
     },
     bullet_pic: {
         width: '60%',
@@ -165,6 +235,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: SCREEN_WIDTH * 0.005,
         flexDirection: 'row',
         alignItems: 'center',
+        
     },
     wrapper: {
         borderBottomColor: '#BFBEB5',
@@ -172,7 +243,8 @@ const styles = StyleSheet.create({
     },
     groceryList_title: {
         fontSize: SCREEN_WIDTH * 0.075,
-        fontWeight: '400',
+        // fontWeight: '400',
+        fontFamily: 'DMSans-Medium',
         marginHorizontal: SCREEN_WIDTH * 0.05,
         marginBottom: SCREEN_WIDTH * 0.02,
     },
@@ -180,7 +252,7 @@ const styles = StyleSheet.create({
         width:'98.5%',
         flexGrow: 1,
         backgroundColor: '#E0E0D9',
-        borderRadius: SCREEN_WIDTH * 0.05,
+        borderRadius: BORDER_RAD,
         padding: SCREEN_WIDTH * 0.04,
         paddingHorizontal: SCREEN_WIDTH * 0.06,
         ...Platform.select({
@@ -192,11 +264,13 @@ const styles = StyleSheet.create({
             }
         }), 
         paddingBottom: SCREEN_WIDTH * 0.065,
+        marginBottom: SCREEN_WIDTH * 0.03,
     },
     middleContainer: {
         width: '87%',
-        height: '55%',
+        height: '56%',
         alignSelf: 'center',
+        marginBottom: SCREEN_WIDTH * 0.025,
     },
     tag: {
         flexShrink: 1,
@@ -217,6 +291,7 @@ const styles = StyleSheet.create({
     },
     tag_text: {
         fontSize: SCREEN_WIDTH * 0.035,
+        fontFamily: 'DMSans-Regular',
     },
     tag_box: {
         position: 'relative',
@@ -226,7 +301,8 @@ const styles = StyleSheet.create({
     },
     trip_title: {
         fontSize: SCREEN_WIDTH * 0.1,
-        fontWeight: '400',
+        // fontWeight: '400',
+        fontFamily: 'DMSans-Medium'
     },
     trip_header: {
         position: 'relative',
