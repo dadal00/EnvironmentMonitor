@@ -8,7 +8,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Fridge'>;
 const FridgeScreen = ({ navigation}: Props ) => {
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text>Fridge Screen</Text>
+          <Text>pretend you see a fridge</Text>
           <Button
             title="Go to Trip"
             onPress={() => navigation.popToTop()}
