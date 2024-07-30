@@ -18,7 +18,7 @@ export default function App() {
         screenOptions={{
           headerShown: false
         }}
-        >
+      >
         <Stack.Screen name="Trip" component={TripScreen} />
         <Stack.Screen name="Fridge" component={FridgeScreen} />
       </Stack.Navigator>
