@@ -101,10 +101,11 @@ const styles = StyleSheet.create({
     plus_sign: {
         fontFamily: 'DMSans-Medium',
         fontSize: SCREEN_WIDTH * 0.175,
+        color: '#FFFFFF',
     },
     new_group: {
         width: SCREEN_WIDTH * 0.9 * 0.86 * 0.985,
-        backgroundColor: '#F8F8F8',
+        backgroundColor: '#2F2F2F',
         borderRadius: SCREEN_WIDTH * 0.0625,
         padding: SCREEN_WIDTH * 0.028,
         alignSelf: 'center',
