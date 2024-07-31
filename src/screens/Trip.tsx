@@ -133,10 +133,33 @@ const TripScreen = ({ navigation}: Props ) => {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                
                 <View style={styles.overlayContainer}>
                     <TouchableOpacity style={styles.transparentArea} onPress={() => setModalVisible(false)} />
                     <GroupsScreen />
+                    <View style={styles.group_tab}>
+                        <Image 
+                            source={{ uri: 'group' }}
+                            style={styles.group_tab_pic}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.group_tab_text}>Groups</Text>
+                    </View>
+                    <View style={styles.receipt_tab}>
+                        <Image 
+                            source={{ uri: 'dollar_sign' }}
+                            style={styles.receipt_tab_pic}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.receipt_tab_text}>Receipts</Text>
+                    </View>
+                    <View style={styles.settings_tab}>
+                        <Image 
+                            source={{ uri: 'gear' }}
+                            style={styles.settings_tab_pic}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.settings_tab_text}>Settings</Text>
+                    </View>
                 </View>
             </Modal>
         </View>
@@ -144,6 +167,81 @@ const TripScreen = ({ navigation}: Props ) => {
 };
 
 const styles = StyleSheet.create({
+    settings_tab_pic: {
+        width: SCREEN_WIDTH * 0.05,
+        height: SCREEN_WIDTH * 0.05,
+    },
+    settings_tab_text: {
+        fontFamily: 'DMSans-Regular',
+        fontSize: SCREEN_WIDTH * 0.045,
+        marginLeft: SCREEN_WIDTH * 0.025,
+        color: 'white',
+    },
+    settings_tab: {
+        bottom: SCREEN_WIDTH * 0.2,
+        right: -SCREEN_WIDTH * 0.0875,
+        position: 'absolute',
+        backgroundColor: '#2F2F2F',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ rotate: '90deg' }],
+        borderRadius: SCREEN_WIDTH * 0.03,
+        paddingBottom: SCREEN_WIDTH * 0.05,
+        paddingTop: SCREEN_WIDTH * 0.01,
+        paddingHorizontal: SCREEN_WIDTH * 0.04,
+    },
+    receipt_tab_pic: {
+        width: SCREEN_WIDTH * 0.055,
+        height: SCREEN_WIDTH * 0.055,
+    },
+    receipt_tab_text: {
+        fontFamily: 'DMSans-Regular',
+        fontSize: SCREEN_WIDTH * 0.045,
+        marginLeft: SCREEN_WIDTH * 0.025,
+        // color: '#2F2F2F',
+    },
+    receipt_tab: {
+        top: SCREEN_WIDTH * 0.565,
+        right: -SCREEN_WIDTH * 0.095,
+        position: 'absolute',
+        backgroundColor: '#9A9990',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ rotate: '90deg' }],
+        borderRadius: SCREEN_WIDTH * 0.03,
+        paddingBottom: SCREEN_WIDTH * 0.05,
+        paddingTop: SCREEN_WIDTH * 0.01,
+        paddingHorizontal: SCREEN_WIDTH * 0.04,
+    },
+    group_tab_text: {
+        fontFamily: 'DMSans-Regular',
+        fontSize: SCREEN_WIDTH * 0.045,
+        marginLeft: SCREEN_WIDTH * 0.025,
+        // color: '#2F2F2F',
+    },
+    group_tab_pic: {
+        width: SCREEN_WIDTH * 0.065,
+        height: SCREEN_WIDTH * 0.065,
+    },
+    group_tab: {
+        position: 'absolute',
+        top: SCREEN_WIDTH * 0.2,
+        right: -SCREEN_WIDTH * 0.08,
+        // width: SCREEN_WIDTH * 0.27,
+        // height: SCREEN_WIDTH * 0.08,
+        backgroundColor: '#BFBEB5',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ rotate: '90deg' }],
+        borderRadius: SCREEN_WIDTH * 0.03,
+        paddingBottom: SCREEN_WIDTH * 0.05,
+        paddingTop: SCREEN_WIDTH * 0.01,
+        paddingHorizontal: SCREEN_WIDTH * 0.04,
+        // paddingHorizontal: SCREEN_WIDTH * 0.05,
+    },
     icon_container: {
         position: 'relative',
         width: SCREEN_WIDTH * 0.24, // Set width and height according to your needs
@@ -167,9 +265,10 @@ const styles = StyleSheet.create({
     },
     transparentArea: {
         width: '100%',
-        height: '100%',
+        height: '32%',
         position: 'absolute',
-        backgroundColor: 'transparent',
+        // backgroundColor: 'transpar',
+        top: SCREEN_WIDTH * 0.79,
     },
     overlayContainer: {
         width: '100%',

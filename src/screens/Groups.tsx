@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
         width: '90%',
         flex: 1,
         backgroundColor: '#BFBEB5',
+        zIndex: 1,
     },
     group_image: {
         width: SCREEN_WIDTH * 0.17,
