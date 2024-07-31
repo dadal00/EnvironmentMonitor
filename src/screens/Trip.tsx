@@ -3,6 +3,8 @@ import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import GroupsScreen from './Groups';
+import { OverlayContext } from '../components/OverlayManager';
+import GroupViewScreen from './GroupView';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -12,6 +14,23 @@ const BORDER_RAD = SCREEN_WIDTH * 0.03;
 
 const TripScreen = ({ navigation}: Props ) => {
     const [modalVisible, setModalVisible] = useState(false);
+    const { currentOverlayScreen } = React.useContext(OverlayContext)
+    
+    const renderOverlayContent = () => {
+        switch (currentOverlayScreen) {
+          case 'Groups':
+            return (
+              <GroupsScreen/>
+            );
+          case 'GroupView':
+            return (
+              <GroupViewScreen/>
+            );
+          default:
+            return null;
+        }
+    };
+    
     return (
         <View style={styles.container}>
             <TouchableOpacity onPress={() => navigation.navigate('Fridge')} style={styles.navButton}>
@@ -135,7 +154,7 @@ const TripScreen = ({ navigation}: Props ) => {
             >
                 <View style={styles.overlayContainer}>
                     <TouchableOpacity style={styles.transparentArea} onPress={() => setModalVisible(false)} />
-                    <GroupsScreen />
+                    {renderOverlayContent()}
                     <View style={styles.group_tab}>
                         <Image 
                             source={{ uri: 'group' }}

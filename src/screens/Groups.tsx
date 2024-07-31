@@ -1,10 +1,12 @@
 import React from 'react';
-import { Button, View, Text, StyleSheet, Image, Dimensions, ScrollView, Platform } from 'react-native';
+import { Button, View, Text, StyleSheet, Image, Dimensions, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { OverlayContext } from '../components/OverlayManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const GroupsScreen = () => {
+    const { setCurrentOverlayScreen } = React.useContext(OverlayContext);
     return (
         <View style={styles.container}>
             <View style={styles.topBar}> 
@@ -19,29 +21,31 @@ const GroupsScreen = () => {
             </View>
             <View style={styles.middle_container}>
                 <ScrollView> 
-                    <View style={styles.group}>
-                        <View style={styles.shadow_image}>
-                            <Image
-                                source={{ uri: 'group_icon' }}
-                                style={styles.group_icon}
-                                resizeMode="contain"
-                            />
-                        </View>
-                        <View style={styles.group_holder}>
-                            <Text style={styles.group_name}>Group #1</Text>
-                            <View style={styles.user_icons_holder}>
-                                <View style={styles.user_icon3}>
-                                    <Text style={styles.user_icon_text3}>ZA</Text>
-                                </View>
-                                <View style={styles.user_icon2}>
-                                    <Text style={styles.user_icon_text2}>AM</Text>
-                                </View>
-                                <View style={styles.user_icon}>
-                                    <Text style={styles.user_icon_text}>AW</Text>
+                    <TouchableOpacity onPress={() => setCurrentOverlayScreen('GroupView')}>
+                        <View style={styles.group}>
+                            <View style={styles.shadow_image}>
+                                <Image
+                                    source={{ uri: 'group_icon' }}
+                                    style={styles.group_icon}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                            <View style={styles.group_holder}>
+                                <Text style={styles.group_name}>Group #1</Text>
+                                <View style={styles.user_icons_holder}>
+                                    <View style={styles.user_icon3}>
+                                        <Text style={styles.user_icon_text3}>ZA</Text>
+                                    </View>
+                                    <View style={styles.user_icon2}>
+                                        <Text style={styles.user_icon_text2}>AM</Text>
+                                    </View>
+                                    <View style={styles.user_icon}>
+                                        <Text style={styles.user_icon_text}>AW</Text>
+                                    </View>
                                 </View>
                             </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.group}>
                         <View style={styles.shadow_image}>
                             <Image
