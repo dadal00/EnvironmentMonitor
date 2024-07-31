@@ -14,7 +14,7 @@ const BORDER_RAD = SCREEN_WIDTH * 0.03;
 
 const TripScreen = ({ navigation}: Props ) => {
     const [modalVisible, setModalVisible] = useState(false);
-    const { currentOverlayScreen } = React.useContext(OverlayContext)
+    const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext)
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -155,14 +155,14 @@ const TripScreen = ({ navigation}: Props ) => {
                 <View style={styles.overlayContainer}>
                     <TouchableOpacity style={styles.transparentArea} onPress={() => setModalVisible(false)} />
                     {renderOverlayContent()}
-                    <View style={styles.group_tab}>
+                    <TouchableOpacity onPress={() => setCurrentOverlayScreen('Groups') } style={styles.group_tab}>
                         <Image 
                             source={{ uri: 'group' }}
                             style={styles.group_tab_pic}
                             resizeMode="contain"
                         />
                         <Text style={styles.group_tab_text}>Groups</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.receipt_tab}>
                         <Image 
                             source={{ uri: 'dollar_sign' }}
