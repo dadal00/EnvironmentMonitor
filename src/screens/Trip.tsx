@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
         height: SCREEN_WIDTH * 0.05,
     },
     settings_tab_text: {
-        fontFamily: 'DMSans-Regular',
+        fontFamily: 'DMSans-Medium',
         fontSize: SCREEN_WIDTH * 0.045,
         marginLeft: SCREEN_WIDTH * 0.025,
         color: 'white',
@@ -440,6 +440,8 @@ const styles = StyleSheet.create({
         height: '56%',
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
+        // flexShrink: 1,
+        // backgroundColor: 'blue',
     },
     tag: {
         flexShrink: 1,
