@@ -3,6 +3,7 @@ import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import GroupsScreen from './Groups';
+import ReceiptScreen from './Receipt'
 import { OverlayContext } from '../components/OverlayManager';
 import GroupViewScreen from './GroupView';
 
@@ -18,16 +19,20 @@ const TripScreen = ({ navigation}: Props ) => {
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
-          case 'Groups':
-            return (
-              <GroupsScreen/>
-            );
-          case 'GroupView':
-            return (
-              <GroupViewScreen/>
-            );
-          default:
-            return null;
+            case 'Groups':
+                return (
+                    <GroupsScreen/>
+                );
+            case 'GroupView':
+                return (
+                    <GroupViewScreen/>
+                );
+            case 'Receipts':
+                return (
+                    <ReceiptScreen/>
+                );
+            default:
+                return null;
         }
     };
     
@@ -163,14 +168,14 @@ const TripScreen = ({ navigation}: Props ) => {
                         />
                         <Text style={styles.group_tab_text}>Groups</Text>
                     </TouchableOpacity>
-                    <View style={styles.receipt_tab}>
+                    <TouchableOpacity onPress={() => setCurrentOverlayScreen('Receipts') } style={styles.receipt_tab}>
                         <Image 
                             source={{ uri: 'dollar_sign' }}
                             style={styles.receipt_tab_pic}
                             resizeMode="contain"
                         />
                         <Text style={styles.receipt_tab_text}>Receipts</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.settings_tab}>
                         <Image 
                             source={{ uri: 'gear' }}
