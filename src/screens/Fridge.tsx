@@ -21,11 +21,11 @@ const FridgeScreen = ({ navigation}: Props ) => {
           <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripButton}>
                   <View style={styles.tripContainer}>
                     <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripPictureButton}>
-                      <Image
-                        source={{uri: 'default_trip_icon'}}
-                        style={styles.tripPicture_image}
-                        resizeMode='contain'
-                      />
+                        <Image
+                          source={{uri: 'default_trip_icon'}}
+                          style={styles.tripPicture_image}
+                          resizeMode='contain'
+                        />
                     </TouchableOpacity>
                     <View style={styles.tripHeader}>
                       <Text style={styles.tripTitle}>
