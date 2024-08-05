@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, Modal, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Modal from 'react-native-modal';
+import { OverlayContext } from '../components/OverlayManager';
+import NewTripScreen from './NewTrip';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Fridge'>;
 
@@ -9,36 +12,78 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const FridgeScreen = ({ navigation}: Props ) => {
-    return (
-        <View style={styles.container}>
-          <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.fridgeZoomButton}>
-                <Image 
-                    source={{uri: 'gear'}}
-                    style={styles.fridgeZoomButton_image} 
-                    resizeMode='contain'
-                />
+  const [modalVisible, setModalVisible] = useState(false);
+  const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext)
+  
+  const toggleModal = (): void => {
+    setModalVisible(!modalVisible);
+  };
+
+  const renderOverlayContent = () => {
+    switch (currentOverlayScreen) {
+        case 'NewTrip':
+            return (
+                <NewTripScreen hideModal={toggleModal}/>
+            );
+        default:
+            return null;
+    }
+};
+  
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.fridgeZoomButton}>
+      <Image 
+          source={{uri: 'gear'}}
+          style={styles.fridgeZoomButton_image} 
+          resizeMode='contain'
+      />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('NewTrip');}} style={styles.tripButton}>
+        <View style={styles.tripContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripPictureButton}>
+              <Image
+                source={{uri: 'default_trip_icon'}}
+                style={styles.tripPicture_image}
+                resizeMode='contain'
+              />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('NewTrip')} style={styles.tripButton}>
-                  <View style={styles.tripContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripPictureButton}>
-                        <Image
-                          source={{uri: 'default_trip_icon'}}
-                          style={styles.tripPicture_image}
-                          resizeMode='contain'
-                        />
-                    </TouchableOpacity>
-                    <View style={styles.tripHeader}>
-                      <Text style={styles.tripTitle}>
-                        My Trip
-                      </Text>
-                    </View>
-                  </View>
-          </TouchableOpacity>
+          <View style={styles.tripHeader}>
+            <Text style={styles.tripTitle}>
+              My Trip
+            </Text>
+          </View>
         </View>
-     );
+      </TouchableOpacity>
+      <Modal
+        animationIn='slideInLeft'
+        animationOut='slideOutLeft'
+        isVisible={modalVisible}
+      >
+        <View style={styles.overlayContainer}>
+          {/* <TouchableOpacity style={styles.transparentArea} onPress={() => setModalVisible(false)} /> */}
+          {renderOverlayContent()}
+        </View>
+      </Modal>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create ({
+  transparentArea: {
+    width: '100%',
+    height: '32%',
+    position: 'absolute',
+    // backgroundColor: 'transpar',
+    top: SCREEN_WIDTH * 0.79,
+  },
+  overlayContainer: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    position: 'absolute',
+    left: -SCREEN_WIDTH * 0.05,
+    // justifyContent: 'center',
+  },
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'white',

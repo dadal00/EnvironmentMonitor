@@ -297,8 +297,8 @@ const styles = StyleSheet.create({
         top: SCREEN_WIDTH * 0.79,
     },
     overlayContainer: {
-        width: '110%',
-        height: '105%',
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
         position: 'absolute',
         left: -SCREEN_WIDTH * 0.05,
     },

@@ -1,25 +1,30 @@
 // App.js
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { OverlayContext } from '../components/OverlayManager';
+// import { RootStackParamList } from '../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'NewTrip'>;
+// type Props = NativeStackScreenProps<RootStackParamList, 'NewTrip'>;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const App = () => {
+interface ChildScreenProps {
+    hideModal: () => void;
+  }
+
+const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
     return (
         <View style={styles.container}>
             <View style={styles.topRow}>
-                <View style={styles.closeButton}>
+                <TouchableOpacity style={styles.closeButton} onPress={hideModal}>
                     <Image
                         source={{uri: 'X'}}
                         style={styles.closeX} 
                         resizeMode='contain'
                     />
-                </View>
+                </TouchableOpacity>
                 <Text style={styles.topTitle}>New Trip</Text>
             </View>
             <View style={styles.tripIcon}/>
@@ -67,14 +72,17 @@ const styles = StyleSheet.create({
         height: SCREEN_WIDTH * 0.11,
     },
     container: {
-        flex: 1,
-        // width: '100%',
+        // flex: 1,
+        width: SCREEN_WIDTH * 0.95,
+        height: SCREEN_HEIGHT * 0.93,
+        borderRadius: SCREEN_HEIGHT * 0.02,
+        marginVertical: SCREEN_HEIGHT * 0.045,
         zIndex: 1,
-        // alignSelf: 'center',
+        alignSelf: 'center',
         alignItems: 'center',
         backgroundColor: 'pink',
         // padding: 20,
     },
 });
 
-export default App;
+export default NewTripScreen;
