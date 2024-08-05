@@ -16,7 +16,7 @@ const FridgeScreen = ({ navigation}: Props ) => {
   const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext)
   
   const toggleModal = (): void => {
-    setModalVisible(!modalVisible);
+    setModalVisible(false);
   };
 
   const renderOverlayContent = () => {
@@ -56,8 +56,8 @@ const FridgeScreen = ({ navigation}: Props ) => {
         </View>
       </TouchableOpacity>
       <Modal
-        animationIn='slideInLeft'
-        animationOut='slideOutLeft'
+        animationIn='fadeIn'
+        animationOut='fadeOut'
         isVisible={modalVisible}
       >
         <View style={styles.overlayContainer}>

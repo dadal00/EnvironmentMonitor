@@ -47,7 +47,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 />
             </TouchableOpacity>
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.icon_container}>
+                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');}} style={styles.icon_container}>
                     <Image
                         source={{ uri: 'default_trip_icon' }}
                         style={styles.image}
