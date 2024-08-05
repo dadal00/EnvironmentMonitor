@@ -442,7 +442,8 @@ const styles = StyleSheet.create({
     },
     middleContainer: {
         width: '87%',
-        height: '56%',
+        // height: '56%',
+        maxHeight: '56%',
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
         // flexShrink: 1,
