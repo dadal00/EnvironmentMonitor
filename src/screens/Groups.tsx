@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     },
     middle_container: {
         width: '86%',
-        height: '56%',
+        maxHeight: '65%',
         // backgroundColor: 'white',
         alignSelf: 'center',
         marginRight: -SCREEN_WIDTH * 0.02,

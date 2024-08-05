@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, Modal, TouchableOpacity } from 'react-native';
+import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import GroupsScreen from './Groups';
 import ReceiptScreen from './Receipt'
 import { OverlayContext } from '../components/OverlayManager';
 import GroupViewScreen from './GroupView';
+import Modal from 'react-native-modal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -152,10 +153,11 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
             </View>
             <Modal
-                transparent={true}
-                animationType="slide"
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
+                // transparent={true}
+                animationIn='slideInLeft'
+                animationOut='slideOutLeft'
+                isVisible={modalVisible}
+                // onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.overlayContainer}>
                     <TouchableOpacity style={styles.transparentArea} onPress={() => setModalVisible(false)} />
@@ -295,9 +297,10 @@ const styles = StyleSheet.create({
         top: SCREEN_WIDTH * 0.79,
     },
     overlayContainer: {
-        width: '100%',
-        height: '100%',
+        width: '110%',
+        height: '105%',
         position: 'absolute',
+        left: -SCREEN_WIDTH * 0.05,
     },
     finish_text: {
         color: '#F8F8F8',
