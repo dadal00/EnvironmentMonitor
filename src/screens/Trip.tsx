@@ -80,7 +80,7 @@ const TripScreen = ({ navigation}: Props ) => {
                             <Text
                                 style={styles.groceryList_title}
                             >Costco</Text>
-                        </View>
+                        </View> 
                         <View style={styles.existing_item}>
                             <View style={styles.bullet_block}>
                                 <Image source={{ uri: 'existing_bullet'}}
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#BFBEB5', // same as the background color of the parent container
         position: 'absolute',
         top: 0,
-        right: -SCREEN_WIDTH * 0.01,
+        right: -SCREEN_WIDTH * 0.011,
         borderBottomLeftRadius: BORDER_RAD,
         // transform: [{ rotate: '45deg' }],
         // overflow:'visible',

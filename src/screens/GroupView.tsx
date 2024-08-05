@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
         color: '#2F2F2F',
     },
     top_image: {
+        // marginTop: SCREEN_WIDTH * 0.04,
         width: SCREEN_WIDTH * 0.3,
         height: SCREEN_WIDTH * 0.3,
         backgroundColor: 'white',
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
         height: SCREEN_WIDTH * 0.6,
         // backgroundColor: 'blue',
         alignSelf: 'center',
-        marginTop: SCREEN_WIDTH * 0.1,
+        marginTop: SCREEN_WIDTH * 0.15,
         alignItems: 'center',
         // justifyContent: 'center',
     },

@@ -3,11 +3,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TripScreen from './screens/Trip';
 import FridgeScreen from './screens/Fridge';
+import NewTripScreen from './screens/NewTrip';
 import { OverlayProvider, OverlayContext } from './components/OverlayManager';
 
 export type RootStackParamList = {
   Trip: undefined;
   Fridge: undefined;
+  NewTrip: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -23,6 +25,7 @@ export default function App() {
         >
           <Stack.Screen name="Trip" component={TripScreen} />
           <Stack.Screen name="Fridge" component={FridgeScreen} />
+          <Stack.Screen name="NewTrip" component={NewTripScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </OverlayProvider>

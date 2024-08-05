@@ -18,7 +18,7 @@ const FridgeScreen = ({ navigation}: Props ) => {
                     resizeMode='contain'
                 />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripButton}>
+          <TouchableOpacity onPress={() => navigation.navigate('NewTrip')} style={styles.tripButton}>
                   <View style={styles.tripContainer}>
                     <TouchableOpacity onPress={() => navigation.navigate('Trip')} style={styles.tripPictureButton}>
                         <Image
