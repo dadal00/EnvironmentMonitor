@@ -1,20 +1,73 @@
 // App.js
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OverlayContext } from '../components/OverlayManager';
-// import { RootStackParamList } from '../App';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView } from 'react-native';
+import {Calendar, LocaleConfig} from 'react-native-calendars';
+import { Dropdown} from 'react-native-element-dropdown';
 
-// type Props = NativeStackScreenProps<RootStackParamList, 'NewTrip'>;
+LocaleConfig.locales['special'] = {
+    monthNames: [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ],
+    monthNamesShort: ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'Mar.', 'Jun.', 'Jul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'],
+    dayNames: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    dayNamesShort: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    today: "Today"
+  };
+
+LocaleConfig.defaultLocale = 'special';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 interface ChildScreenProps {
     hideModal: () => void;
-  }
+}
 
 const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
+    const [dateOpen, setDateOpen] = useState(false);
+    const [groupOpen, setGroupOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isFocus, setIsFocus] = useState(false);
+    const [items, setItems] = useState<{ label: string; value: Date }[]>();
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    // selectedDate.setMonth(selectedDate.getMonth() + 1);
+
+    const handleMonthChange = (newMonth: React.SetStateAction<Date>) => {
+        setSelectedDate(newMonth);
+    };
+
+    useEffect(() => {
+        
+        const items = [];
+        // const startYear = startDate.getFullYear();
+        let currentMonth = new Date();
+    
+        for (let i = 0; i < 36; i++) {
+            const year = currentMonth.getFullYear();
+            const month = monthNames[currentMonth.getMonth()];
+            items.push({
+                label: `${month} ${year}`,
+                value: new Date(year, currentMonth.getMonth(), 1)
+            });
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+        }
+        setItems(items);
+    }, []);
+
     return (
         <View style={styles.container}>
             <View style={styles.topRow}>
@@ -27,48 +80,158 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                 </TouchableOpacity>
                 <Text style={styles.topTitle}>New Trip</Text>
             </View>
-            <View style={styles.tripIcon}/>
-            <View style={styles.trip_name}>
-                <Text style={styles.trip_name_header}>Trip Name</Text>
-                <View style={styles.trip_name_enter}>
-                    <Text style={styles.entered_text}>Trip # 1</Text>
+            <ScrollView style={styles.scrollContainer}>
+                <View style={styles.tripIcon}/>
+                <View style={styles.trip_name}>
+                    <Text style={styles.trip_name_header}>Trip Name</Text>
+                    <View style={styles.trip_name_enter}>
+                        <Text style={styles.entered_text}>Trip # 1</Text>
+                        <Image
+                            source={{uri: 'x_button'}}
+                            style={styles.entered_text_button} 
+                            resizeMode='contain'
+                        />
+                    </View>
+                </View>
+                <TouchableOpacity style={styles.trip_info} onPress={() => {setDateOpen(!dateOpen); setSelectedDate(new Date());}}>
+                    {   
+                        (!dateOpen) ? (
+                            <View style={styles.caveInCorner}>
+                                <View style={styles.triangle}/>
+                            </View>
+                        ) : null
+                    }
                     <Image
-                        source={{uri: 'x_button'}}
-                        style={styles.entered_text_button} 
+                        source={{uri: 'white_calendar'}}
+                        style={styles.trip_date_pic} 
                         resizeMode='contain'
                     />
-                </View>
-            </View>
-            <View style={styles.trip_info}>
-                <View style={styles.caveInCorner}>
-                    <View style={styles.triangle}/>
-                </View>
-                <Image
-                    source={{uri: 'white_calendar'}}
-                    style={styles.trip_date_pic} 
-                    resizeMode='contain'
-                />
-                <Text style={styles.trip_info_text}>Choose Date</Text>
-            </View>
-            <View style={styles.trip_info}>
-                <View style={styles.caveInCorner}>
-                    <View style={styles.triangle}/>
-                </View>
-                <Image
-                    source={{uri: 'white_group'}}
-                    style={styles.trip_group_pic} 
-                    resizeMode='contain'
-                />
-                <Text style={styles.trip_info_text}>Choose Group</Text>
-            </View>
-            <View style={styles.create_trip}>
+                    <Text style={styles.trip_info_text}>Choose Date</Text>
+                </TouchableOpacity>
+                {   
+                    (dateOpen) ? (
+                        <View style={styles.expandedDate}>
+                            <Dropdown
+                                onChange={item => {handleMonthChange(item.value); setIsFocus(false);}}
+                                data={items as { label: string; value: Date }[]}
+                                labelField="label"
+                                valueField="value"
+                                placeholder={monthNames[selectedDate.getMonth()] + " " + selectedDate.getFullYear()}
+                                style={styles.dropContainer}
+                                placeholderStyle={styles.placeholder}
+                                maxHeight={SCREEN_WIDTH * 0.5}
+                                selectedTextStyle={styles.placeholder}
+                                itemTextStyle={styles.placeholder}
+                                containerStyle={styles.list}
+                                onFocus={() => setIsFocus(true)}
+                                onBlur={() => setIsFocus(false)}
+                            />
+                            {/* {
+                                (isFocus) ? 
+                                    <View style={styles.filler}/> : null
+                            } */}
+                            <Calendar
+                                theme={{
+                                    'stylesheet.calendar.header': {
+                                        week: {
+                                            backgroundColor: 'blue',
+                                            // marginTop: 7,
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-around',
+                                            borderRadius: SCREEN_WIDTH * 0.3,
+                                        },
+                                        dayHeader: {
+                                            marginTop: 2,
+                                            marginBottom: 7,
+                                            width: 32,
+                                            textAlign: 'center',
+                                            color: 'white',
+                                            fontFamily: 'DMSans-Bold',
+                                        },
+                                        // dayTextAtIndex0: {
+                                        //     color: 'red',
+                                        // },
+                                        // dayTextAtIndex6: {
+                                        //     color: 'blue',
+                                        // }
+                                    }
+                                }}
+                                initialDate={selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1)}
+                                // style={styles.calendar}
+                                hideArrows={true}
+                                customHeaderTitle={<Text></Text>}
+                                hideExtraDays={true}
+                                // dayComponent="h"
+                            />
+                        </View>
+                    ) : null
+                }
+                <TouchableOpacity style={styles.trip_info} onPress={() => setGroupOpen(!groupOpen)}>
+                    {   
+                        (!groupOpen) ? (
+                            <View style={styles.caveInCorner}>
+                                <View style={styles.triangle}/>
+                            </View>
+                        ) : null
+                    }
+                    <Image
+                        source={{uri: 'white_group'}}
+                        style={styles.trip_group_pic} 
+                        resizeMode='contain'
+                    />
+                    <Text style={styles.trip_info_text}>Choose Group</Text>
+                </TouchableOpacity>
+            </ScrollView>
+            <TouchableOpacity style={styles.create_trip}>
                 <Text style={styles.create_trip_text}>Create Trip</Text>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    list:{
+        backgroundColor: '#BFBEB5',
+        marginTop: -SCREEN_WIDTH * 0.01,
+        // borderColor: 'transparent',
+        // shadowColor: 'transparent',
+        // zIndex: 0,
+        // marginLeft: SCREEN_WIDTH * 0.002,
+        // alignSelf: 'center',
+    },
+    placeholder: {
+        fontFamily: 'DMSans-Medium',
+        fontSize: SCREEN_WIDTH * 0.035,
+        marginLeft: SCREEN_WIDTH * 0.02,
+        color: '#343333',
+    },
+    dropContainer: {
+        zIndex: 1,
+        // flexShrink: 1,
+        marginTop: SCREEN_WIDTH * 0.045,
+        backgroundColor: '#BFBEB5',
+        width: SCREEN_WIDTH * 0.4,
+        borderRadius: SCREEN_WIDTH * 0.3,
+        padding: SCREEN_WIDTH * 0.01,
+        marginLeft: SCREEN_WIDTH * 0.08,
+        // alignItems:
+        // fontSize: SCREEN_WIDTH * 0.01,
+    },
+    scrollContainer: {
+        // backgroundColor: 'blue', 
+        width: '86%',
+        // maxHeight: SCREEN_HEIGHT * 0.64,
+        marginTop: SCREEN_WIDTH * 0.05,
+        marginBottom: SCREEN_WIDTH * 0.115,
+        // flexShrink: 1,
+    },
+    expandedDate: {
+        // width: '100%', 
+        marginTop: -SCREEN_WIDTH * 0.045,
+        backgroundColor: '#6E6D66',
+        zIndex: -1,
+        // padding: SCREEN_WIDTH * 0.045,
+    },
     create_trip_text: {
         color: '#F8F8F8',
         fontFamily: 'DMSans-Bold',
@@ -82,7 +245,7 @@ const styles = StyleSheet.create({
         padding: SCREEN_WIDTH * 0.02,
         borderRadius: SCREEN_WIDTH * 0.05,
         bottom: SCREEN_WIDTH * 0.08,
-        position: 'absolute',
+        // position: 'absolute',
     },
     trip_group_pic: {
         width: SCREEN_WIDTH * 0.13,
@@ -126,7 +289,7 @@ const styles = StyleSheet.create({
         // overflow:'visible',
     },
     trip_info: {
-        width: '86%', 
+        // width: '100%', 
         backgroundColor: '#6E6D66',
         marginTop: SCREEN_WIDTH * 0.03,
         padding: SCREEN_WIDTH * 0.03,
@@ -166,7 +329,7 @@ const styles = StyleSheet.create({
         color: '#F8F8F8',
     },
     trip_name: {
-      width: '86%',  
+    //   width: '86%',  
       backgroundColor: '#6E6D66',
       marginTop: SCREEN_WIDTH * 0.06,
       padding: SCREEN_WIDTH * 0.025,
@@ -179,7 +342,8 @@ const styles = StyleSheet.create({
         height: SCREEN_WIDTH * 0.30,
         borderRadius: SCREEN_WIDTH * 0.15,
         backgroundColor: 'white',
-        marginTop: SCREEN_WIDTH * 0.05,
+        alignSelf: 'center',
+        // marginTop: SCREEN_WIDTH * 0.05,
         ...Platform.select({
             ios: {
                 shadowColor: '#B4B2A6',
