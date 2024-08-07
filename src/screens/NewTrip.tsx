@@ -1,5 +1,5 @@
 // App.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import { Dropdown} from 'react-native-element-dropdown';
@@ -38,13 +38,13 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
     const [dateOpen, setDateOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [isFocus, setIsFocus] = useState(false);
+    // const [isFocus, setIsFocus] = useState(false);
     const [items, setItems] = useState<{ label: string; value: Date }[]>();
     const monthNames = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    // selectedDate.setMonth(selectedDate.getMonth() + 1);
+    const [selectedDay, setSelectedDay] = React.useState(new Date().toISOString().slice(0, 10))
 
     const handleMonthChange = (newMonth: React.SetStateAction<Date>) => {
         setSelectedDate(newMonth);
@@ -112,56 +112,87 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                     (dateOpen) ? (
                         <View style={styles.expandedDate}>
                             <Dropdown
-                                onChange={item => {handleMonthChange(item.value); setIsFocus(false);}}
+                                onChange={item => {handleMonthChange(item.value);}}
                                 data={items as { label: string; value: Date }[]}
                                 labelField="label"
                                 valueField="value"
                                 placeholder={monthNames[selectedDate.getMonth()] + " " + selectedDate.getFullYear()}
                                 style={styles.dropContainer}
                                 placeholderStyle={styles.placeholder}
-                                maxHeight={SCREEN_WIDTH * 0.5}
+                                maxHeight={SCREEN_HEIGHT * 0.25}
                                 selectedTextStyle={styles.placeholder}
                                 itemTextStyle={styles.placeholder}
                                 containerStyle={styles.list}
-                                onFocus={() => setIsFocus(true)}
-                                onBlur={() => setIsFocus(false)}
                             />
-                            {/* {
-                                (isFocus) ? 
-                                    <View style={styles.filler}/> : null
-                            } */}
                             <Calendar
                                 theme={{
+                                    // dayTextColor: '#FFFFFF',
+                                    todayTextColor: '#FFFFFF',
+                                    calendarBackground: '#6E6D66',
+                                    // selectedDayBackgroundColor: '#343333',
+                                    // textDayFontFamily: 'monospace',
+                                    // textDayFontSize: SCREEN_WIDTH * 0.05,
+                                    'stylesheet.day.basic': {
+                                        text: {
+                                            fontFamily: 'DMSans-Bold',
+                                            fontSize: SCREEN_WIDTH * 0.04,
+                                            color: '#FFFFFF',
+                                            marginTop: SCREEN_WIDTH * 0.015,
+                                            marginHorizontal: SCREEN_WIDTH * 0.01,
+                                            // alignSelf: 'center',
+                                        },
+                                        base: {
+                                            width: SCREEN_WIDTH * 0.08,
+                                            // backgroundColor: 'blue',
+                                            height: SCREEN_WIDTH * 0.08,
+                                            alignItems: 'center',
+                                            // justifyContent: 'center',
+                                            // padding: SCREEN_WIDTH * 0.01,
+                                        },
+                                        selected: {
+                                            backgroundColor: '#343333',
+                                            borderRadius: SCREEN_WIDTH * 0.04,
+                                        },
+                                    },
+                                    'stylesheet.calendar.main': {
+                                        week: {
+                                            marginVertical: SCREEN_WIDTH * 0.001,
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-around'
+                                        },
+                                    },
                                     'stylesheet.calendar.header': {
                                         week: {
-                                            backgroundColor: 'blue',
+                                            backgroundColor: '#343333',
                                             // marginTop: 7,
                                             flexDirection: 'row',
                                             justifyContent: 'space-around',
                                             borderRadius: SCREEN_WIDTH * 0.3,
                                         },
                                         dayHeader: {
-                                            marginTop: 2,
-                                            marginBottom: 7,
+                                            // marginTop: 2,
+                                            // marginBottom: 7,
+                                            marginVertical: SCREEN_WIDTH * 0.005,
                                             width: 32,
                                             textAlign: 'center',
-                                            color: 'white',
+                                            color: '#FFFFFF',
                                             fontFamily: 'DMSans-Bold',
+                                            fontSize: SCREEN_WIDTH * 0.04,
                                         },
-                                        // dayTextAtIndex0: {
-                                        //     color: 'red',
-                                        // },
-                                        // dayTextAtIndex6: {
-                                        //     color: 'blue',
-                                        // }
                                     }
                                 }}
                                 initialDate={selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1)}
-                                // style={styles.calendar}
+                                style={styles.calendar}
                                 hideArrows={true}
                                 customHeaderTitle={<Text></Text>}
                                 hideExtraDays={true}
-                                // dayComponent="h"
+                                // onDayPress={onDayPress}
+                                markedDates={{
+                                    [selectedDay]: { selected: true },
+                                }}
+                                onDayPress={(day: { dateString: React.SetStateAction<string>; }) => {
+                                setSelectedDay(day.dateString)
+                                }}
                             />
                         </View>
                     ) : null
@@ -190,9 +221,16 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
 };
 
 const styles = StyleSheet.create({
+    calendar: {
+        // padding: SCREEN_WIDTH * 0.5,
+        marginHorizontal: SCREEN_WIDTH * 0.06,
+        backgroundColor: '#6E6D66',
+        marginTop: -SCREEN_WIDTH * 0.025,
+        marginBottom: SCREEN_WIDTH * 0.04,
+    },
     list:{
         backgroundColor: '#BFBEB5',
-        marginTop: -SCREEN_WIDTH * 0.01,
+        // marginTop: -SCREEN_WIDTH * 0.01,
         // borderColor: 'transparent',
         // shadowColor: 'transparent',
         // zIndex: 0,
@@ -200,7 +238,7 @@ const styles = StyleSheet.create({
         // alignSelf: 'center',
     },
     placeholder: {
-        fontFamily: 'DMSans-Medium',
+        fontFamily: 'DMSans-SemiBold',
         fontSize: SCREEN_WIDTH * 0.035,
         marginLeft: SCREEN_WIDTH * 0.02,
         color: '#343333',
@@ -208,12 +246,12 @@ const styles = StyleSheet.create({
     dropContainer: {
         zIndex: 1,
         // flexShrink: 1,
-        marginTop: SCREEN_WIDTH * 0.045,
+        marginTop: SCREEN_WIDTH * 0.07,
         backgroundColor: '#BFBEB5',
         width: SCREEN_WIDTH * 0.4,
         borderRadius: SCREEN_WIDTH * 0.3,
         padding: SCREEN_WIDTH * 0.01,
-        marginLeft: SCREEN_WIDTH * 0.08,
+        marginLeft: SCREEN_WIDTH * 0.075,
         // alignItems:
         // fontSize: SCREEN_WIDTH * 0.01,
     },
@@ -230,6 +268,8 @@ const styles = StyleSheet.create({
         marginTop: -SCREEN_WIDTH * 0.045,
         backgroundColor: '#6E6D66',
         zIndex: -1,
+        borderBottomLeftRadius: SCREEN_WIDTH * 0.045,
+        borderBottomRightRadius: SCREEN_WIDTH * 0.045,
         // padding: SCREEN_WIDTH * 0.045,
     },
     create_trip_text: {
