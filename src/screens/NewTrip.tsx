@@ -212,6 +212,90 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                     />
                     <Text style={styles.trip_info_text}>Choose Group</Text>
                 </TouchableOpacity>
+                {   
+                    (groupOpen) ? (
+                        <View style={styles.expandedDate}>
+                            <ScrollView style={styles.groupScroll}> 
+                                <TouchableOpacity style={styles.group}>
+                                    <Image
+                                        source={{ uri: 'group_icon' }}
+                                        style={styles.group_icon}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.group_name}>Group #1</Text>
+                                    <View style={styles.user_icons_holder}>
+                                        <View style={styles.user_icon3}>
+                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                                        </View>
+                                        <View style={styles.user_icon2}>
+                                            <Text style={styles.user_icon_text2}>AM</Text>
+                                        </View>
+                                        <View style={styles.user_icon}>
+                                            <Text style={styles.user_icon_text}>AW</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.group}>
+                                    <Image
+                                        source={{ uri: 'group_icon' }}
+                                        style={styles.group_icon}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.group_name}>Group #1</Text>
+                                    <View style={styles.user_icons_holder}>
+                                        <View style={styles.user_icon3}>
+                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                                        </View>
+                                        <View style={styles.user_icon2}>
+                                            <Text style={styles.user_icon_text2}>AM</Text>
+                                        </View>
+                                        <View style={styles.user_icon}>
+                                            <Text style={styles.user_icon_text}>AW</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.group}>
+                                    <Image
+                                        source={{ uri: 'group_icon' }}
+                                        style={styles.group_icon}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.group_name}>Group #1</Text>
+                                    <View style={styles.user_icons_holder}>
+                                        <View style={styles.user_icon3}>
+                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                                        </View>
+                                        <View style={styles.user_icon2}>
+                                            <Text style={styles.user_icon_text2}>AM</Text>
+                                        </View>
+                                        <View style={styles.user_icon}>
+                                            <Text style={styles.user_icon_text}>AW</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.group}>
+                                    <Image
+                                        source={{ uri: 'group_icon' }}
+                                        style={styles.group_icon}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.group_name}>Group #1</Text>
+                                    <View style={styles.user_icons_holder}>
+                                        <View style={styles.user_icon3}>
+                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                                        </View>
+                                        <View style={styles.user_icon2}>
+                                            <Text style={styles.user_icon_text2}>AM</Text>
+                                        </View>
+                                        <View style={styles.user_icon}>
+                                            <Text style={styles.user_icon_text}>AW</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        </View>
+                    ) : null
+                }
             </ScrollView>
             <TouchableOpacity style={styles.create_trip}>
                 <Text style={styles.create_trip_text}>Create Trip</Text>
@@ -221,6 +305,90 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
 };
 
 const styles = StyleSheet.create({
+    user_icons_holder: {
+        flexDirection: 'row-reverse',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        alignSelf: 'center',
+        right: SCREEN_WIDTH * 0.05,
+        // backgroundColor: 'blue',
+    },
+    user_icon_text: {
+        fontFamily: 'SpaceGrotesk-SemiBold',
+        color:'#F8F8F8',
+        fontSize: SCREEN_WIDTH * 0.03,
+    },
+    user_icon: {
+        backgroundColor: '#686868',
+        borderRadius: SCREEN_WIDTH * 0.035,
+        width: SCREEN_WIDTH * 0.07,
+        height: SCREEN_WIDTH * 0.07,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: -SCREEN_WIDTH * 0.0235,
+    },
+    user_icon_text2: {
+        fontFamily: 'SpaceGrotesk-SemiBold',
+        color:'#F8F8F8',
+        fontSize: SCREEN_WIDTH * 0.03,
+    },
+    user_icon2: {
+        backgroundColor: '#BFBEB5',
+        borderRadius: SCREEN_WIDTH * 0.035,
+        width: SCREEN_WIDTH * 0.07,
+        height: SCREEN_WIDTH * 0.07,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: -SCREEN_WIDTH * 0.0235,
+    },
+    user_icon_text3: {
+        fontFamily: 'SpaceGrotesk-SemiBold',
+        color:'#2F2F2F',
+        fontSize: SCREEN_WIDTH * 0.03,
+    },
+    user_icon3: {
+        backgroundColor: '#D2D2D2',
+        borderRadius: SCREEN_WIDTH * 0.035,
+        width: SCREEN_WIDTH * 0.07,
+        height: SCREEN_WIDTH * 0.07,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: -SCREEN_WIDTH * 0.0235,
+    },
+    group_name: {
+        fontFamily: 'DMSans-Medium',
+        fontSize: SCREEN_WIDTH * 0.05,
+        color: '#2F2F2F',
+        position: 'absolute',
+        alignSelf: 'center',
+        left: SCREEN_WIDTH * 0.19,
+    },
+    groupScroll: {
+        marginTop: SCREEN_WIDTH * 0.05,
+        marginBottom: SCREEN_WIDTH * 0.03,
+        maxHeight: SCREEN_HEIGHT * 0.29,
+    },
+    group_icon: {
+        width: SCREEN_WIDTH * 0.12,
+        height: SCREEN_WIDTH * 0.12,
+        // backgroundColor: 'white',
+        borderRadius: SCREEN_WIDTH * 0.21,
+        // borderColor: '#D2D2D2',
+        // borderWidth: SCREEN_WIDTH * 0.01,
+    },
+    group: {
+        marginBottom: SCREEN_WIDTH * 0.02,
+        width: SCREEN_WIDTH * 0.7,
+        // flexGrow: 1,
+        alignSelf: 'center',
+        backgroundColor: '#F8F8F8',
+        borderRadius: SCREEN_WIDTH * 0.08,
+        padding: SCREEN_WIDTH * 0.015,
+        flexDirection: 'row',
+        
+        // zIndex: 1,
+    },
     calendar: {
         // padding: SCREEN_WIDTH * 0.5,
         marginHorizontal: SCREEN_WIDTH * 0.06,

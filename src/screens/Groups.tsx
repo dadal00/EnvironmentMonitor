@@ -21,8 +21,8 @@ const GroupsScreen = () => {
             </View>
             <View style={styles.middle_container}>
                 <ScrollView> 
-                    <TouchableOpacity onPress={() => setCurrentOverlayScreen('GroupView')}>
-                        <View style={styles.group}>
+                    <TouchableOpacity style={styles.group} onPress={() => setCurrentOverlayScreen('GroupView')}>
+                        {/* <View style={styles.group}> */}
                             <View style={styles.shadow_image}>
                                 <Image
                                     source={{ uri: 'group_icon' }}
@@ -44,7 +44,7 @@ const GroupsScreen = () => {
                                     </View>
                                 </View>
                             </View>
-                        </View>
+                        {/* </View> */}
                     </TouchableOpacity>
                     <View style={styles.group}>
                         <View style={styles.shadow_image}>
