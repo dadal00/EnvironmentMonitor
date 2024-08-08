@@ -1,6 +1,6 @@
 // App.js
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import { Dropdown} from 'react-native-element-dropdown';
 
@@ -35,9 +35,11 @@ interface ChildScreenProps {
 }
 
 const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
+    const [text, setText] = useState('');
     const [dateOpen, setDateOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isEditing, setIsEditing] = useState(false);
     // const [isFocus, setIsFocus] = useState(false);
     const [items, setItems] = useState<{ label: string; value: Date }[]>();
     const monthNames = [
@@ -68,7 +70,19 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
         setItems(items);
     }, []);
 
+    const handleSave = () => {
+        const trimmedText = text.trim();
+        if (trimmedText === '') {
+            setText('');
+        } else {
+            setText(trimmedText);
+        }
+        setIsEditing(false);
+        Keyboard.dismiss();
+    };
+
     return (
+        <TouchableWithoutFeedback onPress={() => {Keyboard.dismiss; handleSave();}} accessible={false}>
         <View style={styles.container}>
             <View style={styles.topRow}>
                 <TouchableOpacity style={styles.closeButton} onPress={hideModal}>
@@ -84,14 +98,31 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                 <View style={styles.tripIcon}/>
                 <View style={styles.trip_name}>
                     <Text style={styles.trip_name_header}>Trip Name</Text>
-                    <View style={styles.trip_name_enter}>
-                        <Text style={styles.entered_text}>Trip # 1</Text>
-                        <Image
-                            source={{uri: 'x_button'}}
-                            style={styles.entered_text_button} 
-                            resizeMode='contain'
-                        />
-                    </View>
+                    <TouchableOpacity style={styles.trip_name_enter} onPress={() => setIsEditing(true)}>
+                        {isEditing ? (
+                            // <ScrollView>
+                                <TextInput
+                                    value={text}
+                                    onChangeText={setText}
+                                    // onBlur={() => {setIsEditing(false);}}
+                                    style={styles.entered_text}
+                                    autoFocus
+                                    returnKeyType="done"
+                                    multiline={false}
+                                    onSubmitEditing={handleSave}
+                                />
+                            
+                        ) : (
+                            <Text style={styles.entered_text}>{text || 'Tap to enter text'}</Text>
+                        )}
+                        <TouchableOpacity style={styles.entered_text_button} onPress={() => setText('')}>
+                            <Image
+                                source={{uri: 'x_button'}}
+                                style={styles.entered_text_button_pic} 
+                                resizeMode='contain'
+                            />
+                        </TouchableOpacity>
+                    </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.trip_info} onPress={() => {setDateOpen(!dateOpen); setSelectedDate(new Date());}}>
                     {   
@@ -138,7 +169,8 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                                             fontSize: SCREEN_WIDTH * 0.04,
                                             color: '#FFFFFF',
                                             marginTop: SCREEN_WIDTH * 0.015,
-                                            marginHorizontal: SCREEN_WIDTH * 0.01,
+                                            marginLeft: SCREEN_WIDTH * 0.004,
+                                            // marginHorizontal: SCREEN_WIDTH * 0.01,
                                             // alignSelf: 'center',
                                         },
                                         base: {
@@ -301,10 +333,15 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                 <Text style={styles.create_trip_text}>Create Trip</Text>
             </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
     );
 };
 
 const styles = StyleSheet.create({
+    entered_text_button_pic: {
+        width: SCREEN_WIDTH * 0.06,
+        height: SCREEN_WIDTH * 0.06,
+    },
     user_icons_holder: {
         flexDirection: 'row-reverse',
         alignItems: 'center',
@@ -519,6 +556,7 @@ const styles = StyleSheet.create({
         fontFamily: 'DMSans-Medium',
         fontSize: SCREEN_WIDTH * 0.05,
         marginLeft: SCREEN_WIDTH * 0.03,
+        marginRight: SCREEN_WIDTH * 0.077,
     },
     trip_name_enter: {
         width: SCREEN_WIDTH * 0.75,
