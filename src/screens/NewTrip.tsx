@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import { Dropdown} from 'react-native-element-dropdown';
+import { useDatabase } from '../components/DatabaseContext';
+import Trip from '../../model/Trip';
 
 LocaleConfig.locales['special'] = {
     monthNames: [
@@ -35,6 +37,7 @@ interface ChildScreenProps {
 }
 
 const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
+    const database = useDatabase();
     const [text, setText] = useState('');
     const [dateOpen, setDateOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
@@ -46,11 +49,25 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const [selectedDay, setSelectedDay] = React.useState(new Date().toISOString().slice(0, 10));
+    const [selectedDay, setSelectedDay] = useState(new Date().toISOString().slice(0, 10));
     const [selected, setSelected] = useState(false);
 
     const handleMonthChange = (newMonth: React.SetStateAction<Date>) => {
         setSelectedDate(newMonth);
+    };
+
+    const addTrip = async () => {
+        try {
+            await database?.write(async () => {
+                database.collections .get< Trip >('trips') .create(trip => { 
+                    trip.name = text; 
+                    trip.date = selectedDay; 
+                    // trip.time_stamp = new Date().toISOString().slice(0, 10);
+                });
+            });
+        } catch (error) {
+            console.error('Failed to add trip:', error);
+        }
     };
 
     const formatDate = (dateString: string): string => {
@@ -72,10 +89,8 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
         return formattedDate;
       };
 
-    useEffect(() => {
-        
+    const fetchData = async () => {
         const items = [];
-        // const startYear = startDate.getFullYear();
         let currentMonth = new Date();
     
         for (let i = 0; i < 36; i++) {
@@ -88,6 +103,10 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
             currentMonth.setMonth(currentMonth.getMonth() + 1);
         }
         setItems(items);
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     const handleSave = () => {
@@ -360,7 +379,11 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                     if (trimmedText === '') {
                         setText('');
                     }
-                    
+                    addTrip();
+                    setText('');
+                    setSelectedDay(new Date().toISOString().slice(0, 10));
+                    hideModal();
+                    // navigation.navigate('Trip')
                 }}>
                     <Text style={styles.create_trip_text}>Create Trip</Text>
                 </TouchableOpacity>
@@ -677,3 +700,7 @@ const styles = StyleSheet.create({
 });
 
 export default NewTripScreen;
+function alert(arg0: string) {
+    throw new Error('Function not implemented.');
+}
+

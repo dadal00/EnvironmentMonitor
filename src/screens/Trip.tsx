@@ -7,6 +7,8 @@ import ReceiptScreen from './Receipt'
 import { OverlayContext } from '../components/OverlayManager';
 import GroupViewScreen from './GroupView';
 import Modal from 'react-native-modal';
+import { useDatabase } from '../components/DatabaseContext';
+import Trip from '../../model/Trip';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -15,6 +17,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const BORDER_RAD = SCREEN_WIDTH * 0.03;
 
 const TripScreen = ({ navigation}: Props ) => {
+    const database = useDatabase();
     const [modalVisible, setModalVisible] = useState(false);
     const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext)
     
@@ -36,6 +39,17 @@ const TripScreen = ({ navigation}: Props ) => {
                 return null;
         }
     };
+
+    const fetchTrips = async () => {
+        try {
+            // database?.collections .get< Trip >('trips').query() .fetch();
+      
+          return database?.collections .get< Trip >('trips').query() .fetch();
+        } catch (error) {
+          console.error('Failed to fetch trips:', error);
+          return [];
+        }
+    }
     
     return (
         <View style={styles.container}>
@@ -47,7 +61,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 />
             </TouchableOpacity>
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');}} style={styles.icon_container}>
+                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups'); console.log(fetchTrips());}} style={styles.icon_container}>
                     <Image
                         source={{ uri: 'default_trip_icon' }}
                         style={styles.image}
