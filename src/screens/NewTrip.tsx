@@ -1,10 +1,19 @@
 // App.js
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ScrollView, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import { Dropdown} from 'react-native-element-dropdown';
 import { useDatabase } from '../components/DatabaseContext';
 import Trip from '../../model/Trip';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
+import { useNavigation } from '@react-navigation/native';
+
+interface ChildScreenProps {
+    hideModal?: () => void;
+}
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'NewTrip'>;
 
 LocaleConfig.locales['special'] = {
     monthNames: [
@@ -32,13 +41,13 @@ LocaleConfig.defaultLocale = 'special';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-interface ChildScreenProps {
-    hideModal: () => void;
-}
 
-const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
+const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal}) => {
+    const navigation = useNavigation<NavigationProp>();
+    // const route = useRoute();
     const database = useDatabase();
     const [text, setText] = useState('');
+    // let textValue: React.SetStateAction<string>;
     const [dateOpen, setDateOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -141,12 +150,15 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                             {isEditing ? (
                                 <TextInput
                                     value={text}
-                                    onChangeText={setText}
+                                    onChangeText={newText => setText(newText)}
                                     style={styles.entered_text}
                                     autoFocus
                                     returnKeyType="done"
                                     multiline={false}
                                     onSubmitEditing={handleSave}
+                                    autoCorrect={false}
+                                    autoCapitalize="none"
+                                    maxLength={30}
                                 />
                             ) : (
                                 <Text style={styles.entered_text}>{text || 'Tap to enter text'}</Text>
@@ -375,6 +387,7 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                     }
                 </ScrollView>
                 <TouchableOpacity style={styles.create_trip} onPress={() => {
+                    // setText(textValue);
                     const trimmedText = text.trim();
                     if (trimmedText === '') {
                         setText('');
@@ -382,8 +395,8 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal }) => {
                     addTrip();
                     setText('');
                     setSelectedDay(new Date().toISOString().slice(0, 10));
-                    hideModal();
-                    // navigation.navigate('Trip')
+                    hideModal?.();
+                    navigation.navigate('Trip')
                 }}>
                     <Text style={styles.create_trip_text}>Create Trip</Text>
                 </TouchableOpacity>
@@ -612,6 +625,8 @@ const styles = StyleSheet.create({
         fontSize: SCREEN_WIDTH * 0.05,
         marginLeft: SCREEN_WIDTH * 0.03,
         marginRight: SCREEN_WIDTH * 0.077,
+        // backgroundColor: 'blue',
+        width: SCREEN_WIDTH * 0.6,
     },
     trip_name_enter: {
         width: SCREEN_WIDTH * 0.75,
@@ -700,7 +715,4 @@ const styles = StyleSheet.create({
 });
 
 export default NewTripScreen;
-function alert(arg0: string) {
-    throw new Error('Function not implemented.');
-}
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import GroupsScreen from './Groups';
@@ -16,10 +16,23 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const BORDER_RAD = SCREEN_WIDTH * 0.03;
 
+const formatDate = (dateString: string): string => {
+    if (dateString) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        return `${day}. ${month}. ${year}`;
+    }
+    return '';
+};
+
 const TripScreen = ({ navigation}: Props ) => {
+    const [trip, setTrip] = useState<Trip | null>(null);
     const database = useDatabase();
     const [modalVisible, setModalVisible] = useState(false);
-    const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext)
+    const [newStore, setNewStore] = useState(false);
+    const [storeID, setStoreID] = useState(null);
+    const [placeholder, setPlaceholder] = useState('');
+    const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
+    const [isEditing, setIsEditing] = useState(false);
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -42,16 +55,38 @@ const TripScreen = ({ navigation}: Props ) => {
 
     const fetchTrips = async () => {
         try {
-            // database?.collections .get< Trip >('trips').query() .fetch();
-      
-          return database?.collections .get< Trip >('trips').query() .fetch();
+            const trips = await database?.collections
+                .get<Trip>('trips')
+                .query()
+                .fetch();
+
+            if (trips && trips.length > 0) {
+                setTrip(trips[0]); // Set the first trip
+            } else {
+                setTrip(null); // No trips found
+            }
         } catch (error) {
-          console.error('Failed to fetch trips:', error);
-          return [];
+            console.error('Failed to fetch trips:', error);
         }
     }
+
+    useEffect(() => {
+        fetchTrips();
+    }, []);
+
+    const handleSave = () => {
+        const trimmedText = placeholder.trim();
+        if (trimmedText === '') {
+            setPlaceholder('');
+        } else {
+            setPlaceholder(trimmedText);
+        }
+        setIsEditing(false);
+        Keyboard.dismiss();
+    };
     
     return (
+        <TouchableWithoutFeedback onPress={() => {Keyboard.dismiss; handleSave();}} accessible={false}>
         <View style={styles.container}>
             <TouchableOpacity onPress={() => navigation.navigate('Fridge')} style={styles.navButton}>
                 <Image 
@@ -61,7 +96,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 />
             </TouchableOpacity>
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups'); console.log(fetchTrips());}} style={styles.icon_container}>
+                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');}} style={styles.icon_container}>
                     <Image
                         source={{ uri: 'default_trip_icon' }}
                         style={styles.image}
@@ -69,15 +104,17 @@ const TripScreen = ({ navigation}: Props ) => {
                     />
                 </TouchableOpacity>
                 <View style={styles.trip_header}>
-                    <Text style={styles.trip_title}>
-                        My Trip
-                    </Text>
+                    <ScrollView horizontal={true} style={{width: SCREEN_WIDTH * 0.51, marginTop: SCREEN_WIDTH * 0.04,}}>
+                        <Text style={styles.trip_title} numberOfLines={1}>
+                            {trip?.name}
+                        </Text>
+                    </ScrollView>
                     <View style={styles.tag_box}>
                         <View style={styles.tag}>
                             <Image source={{ uri: 'calendar' }} 
                             style={styles.tag_pic} 
                             resizeMode='contain'/>
-                            <Text style={styles.tag_text}>7. 24. 2024</Text>
+                            <Text style={styles.tag_text}>{formatDate(trip?.date)}</Text>
                         </View>
                         <View style={styles.tag}>
                             <Image source={{ uri: 'default_group_pic' }} 
@@ -91,6 +128,36 @@ const TripScreen = ({ navigation}: Props ) => {
             <View style={styles.middleContainer}>
                 <ScrollView>
                     <View style={styles.groceryList}>
+                        <TouchableOpacity style={styles.wrapper} onPress={() => {setIsEditing(true);}}>
+                            {/* <Text
+                                style={styles.groceryList_title}
+                            >Costco</Text> */}
+                            {isEditing ? (
+                                <TextInput
+                                    value={placeholder}
+                                    onChangeText={newText => setPlaceholder(newText)}
+                                    style={styles.groceryList_title}
+                                    autoFocus
+                                    returnKeyType="done"
+                                    multiline={true}
+                                    onSubmitEditing={handleSave}
+                                    autoCorrect={false}
+                                    autoCapitalize="none"
+                                    maxLength={36}
+                                />
+                            ) : (
+                                <Text style={styles.groceryList_title}>{placeholder || 'Tap to enter text'}</Text>
+                            )}
+                        </TouchableOpacity> 
+                        <View style={styles.existing_item}>
+                            <View style={styles.bullet_block}>
+                                <Image source={{ uri: 'new_bullet'}}
+                                style={styles.bullet_pic}
+                                resizeMode='contain'/>
+                            </View>
+                        </View>
+                    </View>
+                    {/* <View style={styles.groceryList}>
                         <View style={styles.wrapper}>
                             <Text
                                 style={styles.groceryList_title}
@@ -155,16 +222,16 @@ const TripScreen = ({ navigation}: Props ) => {
                             <View style={styles.triangle}/>
                         </View>
                         <Text style={styles.unopened_title}>Trader Joe's</Text>
-                    </View>
+                    </View> */}
                 </ScrollView>
             </View>
             <View style={styles.bottom_container}>
-                <View style={styles.new_store}>
+                <TouchableOpacity style={styles.new_store} onPress={() => setNewStore(true)}>
                     <Text style={styles.plus_sign}>+</Text>
-                </View>
-                <View style={styles.finish_trip}>
+                </TouchableOpacity>
+                {/* <View style={styles.finish_trip}>
                     <Text style={styles.finish_text}>Finish Trip!</Text>
-                </View>
+                </View> */}
             </View>
             <Modal
                 // transparent={true}
@@ -203,6 +270,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
             </Modal>
         </View>
+        </TouchableWithoutFeedback>
     );
 };
 
@@ -438,6 +506,7 @@ const styles = StyleSheet.create({
         marginHorizontal: SCREEN_WIDTH * 0.05,
         marginBottom: SCREEN_WIDTH * 0.02,
         color: '#2F2F2F',
+        // backgroundColor: 'blue',
     },
     groceryList: {
         width:'98.5%',
@@ -460,7 +529,7 @@ const styles = StyleSheet.create({
     middleContainer: {
         width: '87%',
         // height: '56%',
-        maxHeight: '56%',
+        maxHeight: '60%',
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
         // flexShrink: 1,
@@ -499,6 +568,12 @@ const styles = StyleSheet.create({
         // fontWeight: '400',
         fontFamily: 'DMSans-Medium',
         color: '#2F2F2F',
+        
+        // textOverflow: 'ellipsis',
+        // backgroundColor: 'blue',
+        // position: 'absolute',
+        // bottom: 0,
+
     },
     trip_header: {
         position: 'relative',
@@ -508,7 +583,7 @@ const styles = StyleSheet.create({
     topBar: {
         position:'relative',
         width: '87%',
-        height: '15%',
+        height: SCREEN_WIDTH * 0.27,
         // backgroundColor: 'white',
         alignItems: 'center',
         alignSelf: 'center',
@@ -528,7 +603,7 @@ const styles = StyleSheet.create({
         position: 'relative'
     },
     navButton_image: {
-        marginTop: SCREEN_HEIGHT * 0.05,
+        marginTop: SCREEN_HEIGHT * 0.06,
         marginRight: SCREEN_WIDTH * 0.03,
         height: SCREEN_WIDTH * 0.07,
         width: '100%',

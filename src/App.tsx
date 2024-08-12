@@ -5,6 +5,7 @@ import TripScreen from './screens/Trip';
 import FridgeScreen from './screens/Fridge';
 import { OverlayProvider } from './components/OverlayManager';
 import { DatabaseProvider } from './components/DatabaseContext';
+import NewTripScreen from './screens/NewTrip';
 
 export type RootStackParamList = {
   Trip: undefined;
@@ -26,7 +27,7 @@ export default function App() {
           >
             <Stack.Screen name="Trip" component={TripScreen} />
             <Stack.Screen name="Fridge" component={FridgeScreen} />
-            {/* <Stack.Screen name="NewTrip" component={NewTripScreen} /> */}
+            <Stack.Screen name="NewTrip" component={NewTripScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </OverlayProvider>
