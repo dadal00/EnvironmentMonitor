@@ -56,7 +56,7 @@ export default appSchema({
       name: 'group_memberships',
       columns: [
         { name: 'group_id', type: 'string', isIndexed: true },
-        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'user_id', type: 'string'},
       ],
     }),
   ]

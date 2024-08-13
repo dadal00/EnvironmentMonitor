@@ -1,5 +1,5 @@
 import {Model} from '@nozbe/watermelondb';
-import {field, text} from '@nozbe/watermelondb/decorators';
+import {field, relation, text} from '@nozbe/watermelondb/decorators';
 
 export default class Trip extends Model {
     static table = 'trips';
@@ -13,4 +13,6 @@ export default class Trip extends Model {
     @field('date') date;
     @field('base64_image') base64_image;
     @field('time_stamp') time_stamp;
+    @relation('groups', 'group_id') group;
+    @relation('stores', 'trip_id') stores; 
 }

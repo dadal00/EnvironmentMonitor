@@ -3,6 +3,7 @@ import SQLiteAdapter from "@nozbe/watermelondb/adapters/sqlite";
 import migrations from "../../model/migrations";
 import Trip from "../../model/Trip";
 import appSchema from '../../model/schema';
+import Store from "../../model/Store";
 
 
 const adapter = new SQLiteAdapter({
@@ -20,7 +21,7 @@ const adapter = new SQLiteAdapter({
   
 const database = new Database({
     adapter,
-    modelClasses: [Trip],
+    modelClasses: [Trip, Store],
 })
   
 export default database;
