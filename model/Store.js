@@ -5,6 +5,7 @@ export default class Store extends Model {
     static table = 'stores';
     static associations = {
         groceries: { type: 'has_many', foreignKey: 'store_id' },
+        trips: { type: 'belong_to', foreignKey: 'trip_id' },
     }
 
     @field('trip_id') trip_id;

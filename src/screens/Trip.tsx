@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, VirtualizedList, ListRenderItem } from 'react-native';
+import React, { ReactNode, useEffect, useState } from 'react';
+import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, VirtualizedList, ListRenderItem, FlatList } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import GroupsScreen from './Groups';
@@ -10,6 +10,7 @@ import Modal from 'react-native-modal';
 import { useDatabase } from '../components/DatabaseContext';
 import Trip from '../../model/Trip';
 import Store from '../../model/Store';
+import { FlashList } from '@shopify/flash-list';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -20,7 +21,7 @@ const BORDER_RAD = SCREEN_WIDTH * 0.03;
 const formatDate = (dateString: string): string => {
     if (dateString) {
         const [year, month, day] = dateString.split('-').map(Number);
-        return `${day}. ${month}. ${year}`;
+        return `${month}. ${day}. ${year}`;
     }
     return '';
 };
@@ -32,7 +33,7 @@ const TripScreen = ({ navigation}: Props ) => {
     const [newStore, setNewStore] = useState(false);
     const [id, setID] = useState(null);
     const [store, setStore] = useState(false);
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<any[]>([]);
     const [placeholder, setPlaceholder] = useState('');
     const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
     const [isEditing, setIsEditing] = useState(false);
@@ -62,18 +63,25 @@ const TripScreen = ({ navigation}: Props ) => {
                 .get<Trip>('trips')
                 .query()
                 .fetch();
+            const t = await database?.collections.get<Store>('stores').query().fetch();
+            if (t && t.length > 0) {
+                console.log(t[0]);
+            }
             if (trips && trips.length > 0) {
+                console.log(trips[0].stores.fetch());
+                console.log(trips[0].id)
                 setTrip(trips[0]);
                 const stores = await trips[0]?.stores.fetch();
                 if (stores) {
-                    const groceries = await Promise.all(
-                        stores.map((store: { groceries: { fetch: () => any; }; }) => store.groceries.fetch()) // Assuming `cObjects` is the relation name
-                    );
-                    const flattenedData = stores.flatMap((store: any, storeIndex: any) => [
-                        { type: 'store', item: store, index: storeIndex },
-                        ...(groceries[storeIndex]?.length ? groceries[storeIndex].map((grocery: any) => ({ type: 'grocery', item: grocery, storeIndex })) : [])
-                    ]);
-                    setData(flattenedData);
+                    // const groceries = await Promise.all(
+                    //     stores.map((store: { groceries: { fetch: () => any; }; }) => store.groceries.fetch()) // Assuming `cObjects` is the relation name
+                    // );
+                    // const flattenedData = stores.flatMap((store: any, storeIndex: any) => [
+                    //     { type: 'store', item: store, index: storeIndex },
+                    //     ...(groceries[storeIndex]?.length ? groceries[storeIndex].map((grocery: any) => ({ type: 'grocery', item: grocery, storeIndex })) : [])
+                    // ]);
+                    setData(stores);
+                    console.log(stores[0]);
                 }
             } else {
                 setTrip(null); // No trips found
@@ -102,7 +110,7 @@ const TripScreen = ({ navigation}: Props ) => {
         try {
             await database?.write(async () => {
                 database.collections .get< Store >('stores') .create(store => { 
-                    store.trip_id = trip?.id;
+                    store.trip.set(trip);
                     store.name = placeholder;
                 });
             });
@@ -115,22 +123,47 @@ const TripScreen = ({ navigation}: Props ) => {
     const push = async () => {
         if (id) {
 
-        } else {
-            pushNew();
+        } else{
+            if (placeholder != '') {
+                pushNew();
+            }
             setNewStore(false);
             setPlaceholder(''); 
         }
     }
+
+    type ParentViewProps = {
+        children: ReactNode;
+      };
+
+    const ParentView: React.FC<ParentViewProps> = ({ children }) => 
+    {
+        if (isEditing) {
+            return (
+              <TouchableWithoutFeedback onPress={() => {
+                    Keyboard.dismiss; 
+                    handleSave();
+                    setIsEditing(false);
+                    push();
+                }} 
+                accessible={false}
+                >
+                    <View style={styles.container}>
+                        {children}
+                    </View >
+              </TouchableWithoutFeedback>
+            );
+        } else {
+            return (
+                <View style={styles.container}>
+                    {children}
+                </View>
+              );
+        }
+    }
     
     return (
-        <TouchableWithoutFeedback onPress={() => {
-            if (isEditing) {
-                Keyboard.dismiss;
-                handleSave(); 
-                push();
-            }
-            }} accessible={false}>
-        <View style={styles.container}>
+        <ParentView>
             <TouchableOpacity onPress={() => navigation.navigate('Fridge')} style={styles.navButton}>
                 <Image 
                     source={{uri: 'fridge'}}
@@ -139,7 +172,10 @@ const TripScreen = ({ navigation}: Props ) => {
                 />
             </TouchableOpacity>
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups'); console.log(database?.collections .get< Store >('stores').query() .fetch());}} style={styles.icon_container}>
+                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');
+                
+                //  console.log(t ? t.key : null);
+                }} style={styles.icon_container}>
                     <Image
                         source={{ uri: 'default_trip_icon' }}
                         style={styles.image}
@@ -169,118 +205,24 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
             </View>
             <View style={styles.middleContainer}>
-                <ScrollView>
-                    { newStore ? (
-                        <View style={styles.groceryList}>
-                            <TouchableOpacity style={styles.wrapper} onPress={() => {setIsEditing(true);}}>
-                                {isEditing ? (
-                                    <TextInput
-                                        value={placeholder}
-                                        onChangeText={newText => setPlaceholder(newText)}
-                                        style={styles.groceryList_title}
-                                        autoFocus
-                                        returnKeyType="done"
-                                        multiline={false}
-                                        onSubmitEditing={() => {handleSave(); push();}}
-                                        autoCorrect={false}
-                                        autoCapitalize="none"
-                                        maxLength={36}
-                                    />
-                                ) : (
-                                    <Text style={styles.groceryList_title}>{placeholder || 'Tap to enter text'}</Text>
-                                )}
-                            </TouchableOpacity> 
-                            <View style={styles.existing_item}>
-                                <View style={styles.bullet_block}>
-                                    <Image source={{ uri: 'new_bullet'}}
-                                    style={styles.bullet_pic}
-                                    resizeMode='contain'/>
-                                </View>
-                            </View>
-                        </View> ) : null
-                    }
-                    {/* <VirtualizedList
-                        data={data}
-                        getItem={(data, index) => data[index]}
-                        getItemCount={(data) => data.length}
-                        keyExtractor={(item) => item.item.id}
-                        renderItem={({ item }) => {
-                            // if (item.type === 'store') {
-                                return (
-                                    <View key={item.item.id} style={styles.unopened_list}>
-                                        <View style={styles.caveInCorner}>
-                                            <View style={styles.triangle}/>
-                                        </View>
-                                        <Text style={styles.unopened_title}>{item.item.name}</Text>
-                                    </View>
-                                    // <View key={item.item.id} style={styles.container}>
-                                    //     <Text style={styles.header}>Object B: {item.item.name}</Text>
-                                    //     
-                                    //     {data.cs[item.index]?.length ? (
-                                    //         data.cs[item.index].map(c => (
-                                    //             <Text key={c.id} style={styles.item}>Object C: {c.name}</Text>
-                                    //         ))
-                                    //     ) : (
-                                    //         <Text style={styles.item}>No Object C items</Text>
-                                    //     )}
-                                    // </View>
-                                );
-                            // } 
-                            // else {
-                            //     return (
-                            //         // <View key={item.item.id} style={styles.container}>
-                            //         //     <Text style={styles.item}>Object C: {item.item.name}</Text>
-                            //         // </View>
-                            //     );
-                            // }
-                        }}
-                    /> */}
-                    {/* <View style={styles.groceryList}>
-                        <View style={styles.wrapper}>
-                            <Text
+                { newStore ? (
+                    <View style={styles.groceryList}>
+                        <TouchableOpacity style={styles.wrapper}>
+                            <TextInput
+                                onFocus={() => {setIsEditing(true);}}
+                                value={placeholder}
+                                onChangeText={newText => setPlaceholder(newText)}
                                 style={styles.groceryList_title}
-                            >Costco</Text>
-                        </View> 
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'existing_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                            <Text style={styles.bullet_text}>Bananas</Text>
-                        </View>
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'existing_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                            <Text style={styles.bullet_text}>Chicken Breasts</Text>
-                        </View>
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'existing_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                            <Text style={styles.bullet_text}>Ground Beef</Text>
-                        </View>
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'existing_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                            <Text style={styles.bullet_text}>Milk</Text>
-                        </View>
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'existing_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                            <Text style={styles.bullet_text}>Eggs</Text>
-                        </View>
+                                autoFocus = {isEditing}
+                                returnKeyType="done"
+                                multiline={false}
+                                onSubmitEditing={() => {handleSave(); push();}}
+                                autoCorrect={false}
+                                autoCapitalize="none"
+                                maxLength={36}
+                                placeholder='Tap to enter text'
+                            />
+                        </TouchableOpacity> 
                         <View style={styles.existing_item}>
                             <View style={styles.bullet_block}>
                                 <Image source={{ uri: 'new_bullet'}}
@@ -288,28 +230,23 @@ const TripScreen = ({ navigation}: Props ) => {
                                 resizeMode='contain'/>
                             </View>
                         </View>
-                    </View>
-                    <View style={styles.unopened_list}>
-                        <View style={styles.caveInCorner}>
-                            <View style={styles.triangle}/>
+                    </View> ) : null
+                }
+                <ScrollView>
+                    {data.map((item, index) => (
+                        <View key={index} style={styles.unopened_list}>
+                            <View style={styles.caveInCorner}>
+                                <View style={styles.triangle}/>
+                            </View>
+                            <Text style={styles.unopened_title}>{item.name}</Text>
                         </View>
-                        <Text style={styles.unopened_title}>Target</Text>
-                    </View>
-                    <View style={styles.unopened_list}>
-                        <View style={styles.caveInCorner}>
-                            <View style={styles.triangle}/>
-                        </View>
-                        <Text style={styles.unopened_title}>Trader Joe's</Text>
-                    </View> */}
+                    ))}
                 </ScrollView>
             </View>
-            <View style={styles.bottom_container}>
-                <TouchableOpacity style={styles.new_store} onPress={() => setNewStore(true)}>
-                    <Text style={styles.plus_sign}>+</Text>
-                </TouchableOpacity>
-                {/* <View style={styles.finish_trip}>
-                    <Text style={styles.finish_text}>Finish Trip!</Text>
-                </View> */}
+                <View style={styles.bottom_container}>
+                    <TouchableOpacity style={styles.new_store} onPress={() => {setNewStore(true); setIsEditing(true);}}>
+                        <Text style={styles.plus_sign}>+</Text>
+                    </TouchableOpacity>
             </View>
             <Modal
                 // transparent={true}
@@ -347,8 +284,9 @@ const TripScreen = ({ navigation}: Props ) => {
                     </View>
                 </View>
             </Modal>
-        </View>
-        </TouchableWithoutFeedback>
+        </ParentView>
+        
+        
     );
 };
 
@@ -607,11 +545,12 @@ const styles = StyleSheet.create({
     middleContainer: {
         width: '87%',
         // height: '56%',
-        maxHeight: '60%',
+        maxHeight: '50%',
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
+        // flex: 1,
         // flexShrink: 1,
-        // backgroundColor: 'blue',
+        backgroundColor: 'blue',
     },
     tag: {
         flexShrink: 1,
@@ -672,7 +611,8 @@ const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'white',
-        position:'absolute'
+        position:'absolute',
+        flex: 1,
     },
     navButton: {
         alignSelf: 'flex-end',
