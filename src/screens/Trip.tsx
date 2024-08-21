@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Button, View, Text, StyleSheet, Dimensions, Image, ScrollView, Platform, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, VirtualizedList, ListRenderItem, FlatList } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -37,6 +37,9 @@ const TripScreen = ({ navigation}: Props ) => {
     const [placeholder, setPlaceholder] = useState('');
     const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
     const [isEditing, setIsEditing] = useState(false);
+    const scrollPosition = useRef(0);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const [hasScrolledBack, setHasScrolledBack] = useState(false);
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -63,28 +66,10 @@ const TripScreen = ({ navigation}: Props ) => {
                 .get<Trip>('trips')
                 .query()
                 .fetch();
-            const t = await database?.collections.get<Store>('stores').query().fetch();
-            if (t && t.length > 0) {
-                console.log(t[0]);
-            }
             if (trips && trips.length > 0) {
-                console.log(trips[0].stores.fetch());
-                console.log(trips[0].id)
                 setTrip(trips[0]);
                 const stores = await trips[0]?.stores.fetch();
-                if (stores) {
-                    // const groceries = await Promise.all(
-                    //     stores.map((store: { groceries: { fetch: () => any; }; }) => store.groceries.fetch()) // Assuming `cObjects` is the relation name
-                    // );
-                    // const flattenedData = stores.flatMap((store: any, storeIndex: any) => [
-                    //     { type: 'store', item: store, index: storeIndex },
-                    //     ...(groceries[storeIndex]?.length ? groceries[storeIndex].map((grocery: any) => ({ type: 'grocery', item: grocery, storeIndex })) : [])
-                    // ]);
-                    setData(stores);
-                    console.log(stores[0]);
-                }
-            } else {
-                setTrip(null); // No trips found
+                setData(stores);
             }
         } catch (error) {
             console.error('Failed to fetch trips:', error);
@@ -93,6 +78,10 @@ const TripScreen = ({ navigation}: Props ) => {
 
     useEffect(() => {
         fetchTrip();
+        // if (scrollViewRef.current && !hasScrolledBack) {
+        //     scrollViewRef.current.scrollTo({ y: scrollPosition.current, animated: false });
+        //     setHasScrolledBack(true); // Ensure this only happens once
+        // }
     }, []);
 
     const handleSave = () => {
@@ -112,9 +101,9 @@ const TripScreen = ({ navigation}: Props ) => {
                 database.collections .get< Store >('stores') .create(store => { 
                     store.trip.set(trip);
                     store.name = placeholder;
+                    store.touched = Date.now(); 
                 });
             });
-            // console.log()
         } catch (error) {
             console.error('Failed to add store:', error);
         }
@@ -145,6 +134,7 @@ const TripScreen = ({ navigation}: Props ) => {
                     handleSave();
                     setIsEditing(false);
                     push();
+                    fetchTrip();
                 }} 
                 accessible={false}
                 >
@@ -162,6 +152,12 @@ const TripScreen = ({ navigation}: Props ) => {
         }
     }
     
+    const handleScroll = (event: { nativeEvent: { contentOffset: { y: number; }; }; }) => {
+        if (!hasScrolledBack) {
+            scrollPosition.current = event.nativeEvent.contentOffset.y;
+        }
+    };
+
     return (
         <ParentView>
             <TouchableOpacity onPress={() => navigation.navigate('Fridge')} style={styles.navButton}>
@@ -173,8 +169,6 @@ const TripScreen = ({ navigation}: Props ) => {
             </TouchableOpacity>
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');
-                
-                //  console.log(t ? t.key : null);
                 }} style={styles.icon_container}>
                     <Image
                         source={{ uri: 'default_trip_icon' }}
@@ -205,34 +199,8 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
             </View>
             <View style={styles.middleContainer}>
-                { newStore ? (
-                    <View style={styles.groceryList}>
-                        <TouchableOpacity style={styles.wrapper}>
-                            <TextInput
-                                onFocus={() => {setIsEditing(true);}}
-                                value={placeholder}
-                                onChangeText={newText => setPlaceholder(newText)}
-                                style={styles.groceryList_title}
-                                autoFocus = {isEditing}
-                                returnKeyType="done"
-                                multiline={false}
-                                onSubmitEditing={() => {handleSave(); push();}}
-                                autoCorrect={false}
-                                autoCapitalize="none"
-                                maxLength={36}
-                                placeholder='Tap to enter text'
-                            />
-                        </TouchableOpacity> 
-                        <View style={styles.existing_item}>
-                            <View style={styles.bullet_block}>
-                                <Image source={{ uri: 'new_bullet'}}
-                                style={styles.bullet_pic}
-                                resizeMode='contain'/>
-                            </View>
-                        </View>
-                    </View> ) : null
-                }
-                <ScrollView>
+                <ScrollView ref={scrollViewRef} onScroll={handleScroll} >
+                    
                     {data.map((item, index) => (
                         <View key={index} style={styles.unopened_list}>
                             <View style={styles.caveInCorner}>
@@ -242,11 +210,38 @@ const TripScreen = ({ navigation}: Props ) => {
                         </View>
                     ))}
                 </ScrollView>
+                { newStore ? (
+                        <View style={styles.groceryList}>
+                            <TouchableOpacity style={styles.wrapper}>
+                                <TextInput
+                                    onFocus={() => {scrollViewRef?.current?.scrollToEnd({animated: false});}}
+                                    value={placeholder}
+                                    onChangeText={newText => setPlaceholder(newText)}
+                                    style={styles.groceryList_title}
+                                    autoFocus = {isEditing}
+                                    returnKeyType="done"
+                                    multiline={false}
+                                    onSubmitEditing={() => {handleSave(); push(); fetchTrip();}}
+                                    autoCorrect={false}
+                                    autoCapitalize="none"
+                                    maxLength={36}
+                                    placeholder='Tap to enter text'
+                                />
+                            </TouchableOpacity> 
+                            <View style={styles.existing_item}>
+                                <View style={styles.bullet_block}>
+                                    <Image source={{ uri: 'new_bullet'}}
+                                    style={styles.bullet_pic}
+                                    resizeMode='contain'/>
+                                </View>
+                            </View>
+                        </View> ) : null
+                    }
             </View>
-                <View style={styles.bottom_container}>
-                    <TouchableOpacity style={styles.new_store} onPress={() => {setNewStore(true); setIsEditing(true);}}>
-                        <Text style={styles.plus_sign}>+</Text>
-                    </TouchableOpacity>
+            <View style={styles.bottom_container}>
+                <TouchableOpacity style={styles.new_store} onPress={() => {setHasScrolledBack(false); setNewStore(true); setIsEditing(true); }}>
+                    <Text style={styles.plus_sign}>+</Text>
+                </TouchableOpacity>
             </View>
             <Modal
                 // transparent={true}
@@ -291,6 +286,9 @@ const TripScreen = ({ navigation}: Props ) => {
 };
 
 const styles = StyleSheet.create({
+    flashListContainer: {
+        flexGrow: 1,
+    },
     settings_tab_pic: {
         width: SCREEN_WIDTH * 0.05,
         height: SCREEN_WIDTH * 0.05,
@@ -545,11 +543,14 @@ const styles = StyleSheet.create({
     middleContainer: {
         width: '87%',
         // height: '56%',
-        maxHeight: '50%',
+        maxHeight: SCREEN_HEIGHT * 0.3,
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
         // flex: 1,
         // flexShrink: 1,
+        // flexGrow: 1,
+        // minHeight: 100, // Starting small
+        // maxHeight: 300,
         backgroundColor: 'blue',
     },
     tag: {

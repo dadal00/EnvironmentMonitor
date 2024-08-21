@@ -71,6 +71,7 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal}) => {
                 database.collections .get< Trip >('trips') .create(trip => { 
                     trip.name = text; 
                     trip.date = selectedDay; 
+                    trip.touched = Date.now(); 
                     // trip.time_stamp = new Date().toISOString().slice(0, 10);
                 });
             });
@@ -140,7 +141,6 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal}) => {
                 Keyboard.dismiss; 
                 handleSave();
                 setIsEditing(false);
-                console.log(isEditing);
                 }} 
                 accessible={false}
                 >
@@ -160,288 +160,274 @@ const NewTripScreen: React.FC<ChildScreenProps> = ({ hideModal}) => {
 
     return (
         <ParentView>
-        <View style={styles.container}>
-            {/* {isEditing ? 
-                (<TouchableWithoutFeedback 
-                    onPress={() => {Keyboard.dismiss; handleSave(); console.log("1");}}
-                    accessible={false}>
-                    <View style={{ position: 'absolute',
-                        top: 0, 
-                        bottom: 0, 
-                        left: 0, 
-                        right: 0,
-                        backgroundColor:'blue',
-                        zIndex: 0 }} />
-                </TouchableWithoutFeedback>    
-                ) : null
-            } */}
-            <View style={styles.topRow}>
-                <TouchableOpacity style={styles.closeButton} onPress={hideModal}>
-                    <Image
-                        source={{uri: 'X'}}
-                        style={styles.closeX} 
-                        resizeMode='contain'
-                    />
-                </TouchableOpacity>
-                <Text style={styles.topTitle}>New Trip</Text>
-            </View>
-            <ScrollView style={styles.scrollContainer}>
-                <View style={styles.tripIcon}/>
-                <View style={styles.trip_name}>
-                    <Text style={styles.trip_name_header}>Trip Name</Text>
-                    <TouchableOpacity style={styles.trip_name_enter}>
-                        <TextInput
-                            onFocus={() => {setIsEditing(true);}}
-                            value={text}
-                            onChangeText={newText => setText(newText)}
-                            style={styles.entered_text}
-                            autoFocus = {isEditing}
-                            returnKeyType="done"
-                            multiline={false}
-                            onSubmitEditing={handleSave}
-                            autoCorrect={false}
-                            autoCapitalize="none"
-                            maxLength={30}
-                            placeholder='Tap to enter text'
+            <View style={styles.container}>
+                <View style={styles.topRow}>
+                    <TouchableOpacity style={styles.closeButton} onPress={hideModal}>
+                        <Image
+                            source={{uri: 'X'}}
+                            style={styles.closeX} 
+                            resizeMode='contain'
                         />
-                        <TouchableOpacity style={styles.entered_text_button} onPress={() => setText('')}>
-                            <Image
-                                source={{uri: 'x_button'}}
-                                style={styles.entered_text_button_pic} 
-                                resizeMode='contain'
-                            />
-                        </TouchableOpacity>
                     </TouchableOpacity>
+                    <Text style={styles.topTitle}>New Trip</Text>
                 </View>
-                <TouchableOpacity style={styles.trip_info} onPress={() => {setDateOpen(!dateOpen); setSelectedDate(new Date()); console.log(isEditing);}}>
-                    {   
-                        (!dateOpen) ? (
-                            <View style={styles.caveInCorner}>
-                                <View style={styles.triangle}/>
-                            </View>
-                        ) : null
-                    }
-                    <Image
-                        source={{uri: 'white_calendar'}}
-                        style={styles.trip_date_pic} 
-                        resizeMode='contain'
-                    />
-                    { 
-                        (!selected) ? (
-                            <Text style={styles.trip_info_text}>Choose Date</Text>
+                <ScrollView style={styles.scrollContainer}>
+                    <View style={styles.tripIcon}/>
+                    <View style={styles.trip_name}>
+                        <Text style={styles.trip_name_header}>Trip Name</Text>
+                        <TouchableOpacity style={styles.trip_name_enter}>
+                            <TextInput
+                                onFocus={() => {setIsEditing(true);}}
+                                value={text}
+                                onChangeText={newText => setText(newText)}
+                                style={styles.entered_text}
+                                autoFocus = {isEditing}
+                                returnKeyType="done"
+                                multiline={false}
+                                onSubmitEditing={handleSave}
+                                autoCorrect={false}
+                                autoCapitalize="none"
+                                maxLength={30}
+                                placeholder='Tap to enter text'
+                            />
+                            <TouchableOpacity style={styles.entered_text_button} onPress={() => setText('')}>
+                                <Image
+                                    source={{uri: 'x_button'}}
+                                    style={styles.entered_text_button_pic} 
+                                    resizeMode='contain'
+                                />
+                            </TouchableOpacity>
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={styles.trip_info} onPress={() => {setDateOpen(!dateOpen); setSelectedDate(new Date());}}>
+                        {   
+                            (!dateOpen) ? (
+                                <View style={styles.caveInCorner}>
+                                    <View style={styles.triangle}/>
+                                </View>
+                            ) : null
+                        }
+                        <Image
+                            source={{uri: 'white_calendar'}}
+                            style={styles.trip_date_pic} 
+                            resizeMode='contain'
+                        />
+                        { 
+                            (!selected) ? (
+                                <Text style={styles.trip_info_text}>Choose Date</Text>
 
-                        ) : (
-                            <Text style={styles.trip_info_text}>{formatDate(selectedDay)}</Text>
-                        )
-                    }
-                    
-                </TouchableOpacity>
-                {   
-                    (dateOpen) ? (
-                        <View style={styles.expandedDate}>
-                            <Dropdown
-                                onChange={item => {handleMonthChange(item.value);}}
-                                data={items as { label: string; value: Date }[]}
-                                labelField="label"
-                                valueField="value"
-                                placeholder={monthNames[selectedDate.getMonth()] + " " + selectedDate.getFullYear()}
-                                style={styles.dropContainer}
-                                placeholderStyle={styles.placeholder}
-                                maxHeight={SCREEN_HEIGHT * 0.25}
-                                selectedTextStyle={styles.placeholder}
-                                itemTextStyle={styles.placeholder}
-                                containerStyle={styles.list}
-                            />
-                            <Calendar
-                                theme={{
-                                    // dayTextColor: '#FFFFFF',
-                                    todayTextColor: '#FFFFFF',
-                                    calendarBackground: '#6E6D66',
-                                    // selectedDayBackgroundColor: '#343333',
-                                    // textDayFontFamily: 'monospace',
-                                    // textDayFontSize: SCREEN_WIDTH * 0.05,
-                                    'stylesheet.day.basic': {
-                                        text: {
-                                            fontFamily: 'DMSans-Bold',
-                                            fontSize: SCREEN_WIDTH * 0.04,
-                                            color: '#FFFFFF',
-                                            marginTop: SCREEN_WIDTH * 0.015,
-                                            marginLeft: SCREEN_WIDTH * 0.004,
-                                            // marginHorizontal: SCREEN_WIDTH * 0.01,
-                                            // alignSelf: 'center',
-                                        },
-                                        base: {
-                                            width: SCREEN_WIDTH * 0.08,
-                                            // backgroundColor: 'blue',
-                                            height: SCREEN_WIDTH * 0.08,
-                                            alignItems: 'center',
-                                            // justifyContent: 'center',
-                                            // padding: SCREEN_WIDTH * 0.01,
-                                        },
-                                        selected: {
-                                            backgroundColor: '#343333',
-                                            borderRadius: SCREEN_WIDTH * 0.04,
-                                        },
-                                    },
-                                    'stylesheet.calendar.main': {
-                                        week: {
-                                            marginVertical: SCREEN_WIDTH * 0.001,
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-around'
-                                        },
-                                    },
-                                    'stylesheet.calendar.header': {
-                                        week: {
-                                            backgroundColor: '#343333',
-                                            // marginTop: 7,
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-around',
-                                            borderRadius: SCREEN_WIDTH * 0.3,
-                                        },
-                                        dayHeader: {
-                                            // marginTop: 2,
-                                            // marginBottom: 7,
-                                            marginVertical: SCREEN_WIDTH * 0.005,
-                                            width: 32,
-                                            textAlign: 'center',
-                                            color: '#FFFFFF',
-                                            fontFamily: 'DMSans-Bold',
-                                            fontSize: SCREEN_WIDTH * 0.04,
-                                        },
-                                    }
-                                }}
-                                initialDate={selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1)}
-                                style={styles.calendar}
-                                hideArrows={true}
-                                customHeaderTitle={<Text></Text>}
-                                hideExtraDays={true}
-                                // onDayPress={onDayPress}
-                                markedDates={{
-                                    [selectedDay]: { selected: true },
-                                }}
-                                onDayPress={(day: { dateString: React.SetStateAction<string>; }) => {
-                                    setSelectedDay(day.dateString);
-                                    setSelected(true);
-                                }}
-                            />
-                        </View>
-                    ) : null
-                }
-                <TouchableOpacity style={styles.trip_info} onPress={() => setGroupOpen(!groupOpen)}>
+                            ) : (
+                                <Text style={styles.trip_info_text}>{formatDate(selectedDay)}</Text>
+                            )
+                        }
+                        
+                    </TouchableOpacity>
                     {   
-                        (!groupOpen) ? (
-                            <View style={styles.caveInCorner}>
-                                <View style={styles.triangle}/>
+                        (dateOpen) ? (
+                            <View style={styles.expandedDate}>
+                                <Dropdown
+                                    onChange={item => {handleMonthChange(item.value);}}
+                                    data={items as { label: string; value: Date }[]}
+                                    labelField="label"
+                                    valueField="value"
+                                    placeholder={monthNames[selectedDate.getMonth()] + " " + selectedDate.getFullYear()}
+                                    style={styles.dropContainer}
+                                    placeholderStyle={styles.placeholder}
+                                    maxHeight={SCREEN_HEIGHT * 0.25}
+                                    selectedTextStyle={styles.placeholder}
+                                    itemTextStyle={styles.placeholder}
+                                    containerStyle={styles.list}
+                                />
+                                <Calendar
+                                    theme={{
+                                        // dayTextColor: '#FFFFFF',
+                                        todayTextColor: '#FFFFFF',
+                                        calendarBackground: '#6E6D66',
+                                        // selectedDayBackgroundColor: '#343333',
+                                        // textDayFontFamily: 'monospace',
+                                        // textDayFontSize: SCREEN_WIDTH * 0.05,
+                                        'stylesheet.day.basic': {
+                                            text: {
+                                                fontFamily: 'DMSans-Bold',
+                                                fontSize: SCREEN_WIDTH * 0.04,
+                                                color: '#FFFFFF',
+                                                marginTop: SCREEN_WIDTH * 0.015,
+                                                marginLeft: SCREEN_WIDTH * 0.004,
+                                                // marginHorizontal: SCREEN_WIDTH * 0.01,
+                                                // alignSelf: 'center',
+                                            },
+                                            base: {
+                                                width: SCREEN_WIDTH * 0.08,
+                                                // backgroundColor: 'blue',
+                                                height: SCREEN_WIDTH * 0.08,
+                                                alignItems: 'center',
+                                                // justifyContent: 'center',
+                                                // padding: SCREEN_WIDTH * 0.01,
+                                            },
+                                            selected: {
+                                                backgroundColor: '#343333',
+                                                borderRadius: SCREEN_WIDTH * 0.04,
+                                            },
+                                        },
+                                        'stylesheet.calendar.main': {
+                                            week: {
+                                                marginVertical: SCREEN_WIDTH * 0.001,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-around'
+                                            },
+                                        },
+                                        'stylesheet.calendar.header': {
+                                            week: {
+                                                backgroundColor: '#343333',
+                                                // marginTop: 7,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-around',
+                                                borderRadius: SCREEN_WIDTH * 0.3,
+                                            },
+                                            dayHeader: {
+                                                // marginTop: 2,
+                                                // marginBottom: 7,
+                                                marginVertical: SCREEN_WIDTH * 0.005,
+                                                width: 32,
+                                                textAlign: 'center',
+                                                color: '#FFFFFF',
+                                                fontFamily: 'DMSans-Bold',
+                                                fontSize: SCREEN_WIDTH * 0.04,
+                                            },
+                                        }
+                                    }}
+                                    initialDate={selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1)}
+                                    style={styles.calendar}
+                                    hideArrows={true}
+                                    customHeaderTitle={<Text></Text>}
+                                    hideExtraDays={true}
+                                    // onDayPress={onDayPress}
+                                    markedDates={{
+                                        [selectedDay]: { selected: true },
+                                    }}
+                                    onDayPress={(day: { dateString: React.SetStateAction<string>; }) => {
+                                        setSelectedDay(day.dateString);
+                                        setSelected(true);
+                                    }}
+                                />
                             </View>
                         ) : null
                     }
-                    <Image
-                        source={{uri: 'white_group'}}
-                        style={styles.trip_group_pic} 
-                        resizeMode='contain'
-                    />
-                    <Text style={styles.trip_info_text}>Choose Group</Text>
-                </TouchableOpacity>
-                {   
-                    (groupOpen) ? (
-                        <View style={styles.expandedDate}>
-                            <ScrollView style={styles.groupScroll}> 
-                                <TouchableOpacity style={styles.group}>
-                                    <Image
-                                        source={{ uri: 'group_icon' }}
-                                        style={styles.group_icon}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.group_name}>Group #1</Text>
-                                    <View style={styles.user_icons_holder}>
-                                        <View style={styles.user_icon3}>
-                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                    <TouchableOpacity style={styles.trip_info} onPress={() => setGroupOpen(!groupOpen)}>
+                        {   
+                            (!groupOpen) ? (
+                                <View style={styles.caveInCorner}>
+                                    <View style={styles.triangle}/>
+                                </View>
+                            ) : null
+                        }
+                        <Image
+                            source={{uri: 'white_group'}}
+                            style={styles.trip_group_pic} 
+                            resizeMode='contain'
+                        />
+                        <Text style={styles.trip_info_text}>Choose Group</Text>
+                    </TouchableOpacity>
+                    {   
+                        (groupOpen) ? (
+                            <View style={styles.expandedDate}>
+                                <ScrollView style={styles.groupScroll}> 
+                                    <TouchableOpacity style={styles.group}>
+                                        <Image
+                                            source={{ uri: 'group_icon' }}
+                                            style={styles.group_icon}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={styles.group_name}>Group #1</Text>
+                                        <View style={styles.user_icons_holder}>
+                                            <View style={styles.user_icon3}>
+                                                <Text style={styles.user_icon_text3}>ZA</Text>
+                                            </View>
+                                            <View style={styles.user_icon2}>
+                                                <Text style={styles.user_icon_text2}>AM</Text>
+                                            </View>
+                                            <View style={styles.user_icon}>
+                                                <Text style={styles.user_icon_text}>AW</Text>
+                                            </View>
                                         </View>
-                                        <View style={styles.user_icon2}>
-                                            <Text style={styles.user_icon_text2}>AM</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.group}>
+                                        <Image
+                                            source={{ uri: 'group_icon' }}
+                                            style={styles.group_icon}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={styles.group_name}>Group #1</Text>
+                                        <View style={styles.user_icons_holder}>
+                                            <View style={styles.user_icon3}>
+                                                <Text style={styles.user_icon_text3}>ZA</Text>
+                                            </View>
+                                            <View style={styles.user_icon2}>
+                                                <Text style={styles.user_icon_text2}>AM</Text>
+                                            </View>
+                                            <View style={styles.user_icon}>
+                                                <Text style={styles.user_icon_text}>AW</Text>
+                                            </View>
                                         </View>
-                                        <View style={styles.user_icon}>
-                                            <Text style={styles.user_icon_text}>AW</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.group}>
+                                        <Image
+                                            source={{ uri: 'group_icon' }}
+                                            style={styles.group_icon}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={styles.group_name}>Group #1</Text>
+                                        <View style={styles.user_icons_holder}>
+                                            <View style={styles.user_icon3}>
+                                                <Text style={styles.user_icon_text3}>ZA</Text>
+                                            </View>
+                                            <View style={styles.user_icon2}>
+                                                <Text style={styles.user_icon_text2}>AM</Text>
+                                            </View>
+                                            <View style={styles.user_icon}>
+                                                <Text style={styles.user_icon_text}>AW</Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.group}>
-                                    <Image
-                                        source={{ uri: 'group_icon' }}
-                                        style={styles.group_icon}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.group_name}>Group #1</Text>
-                                    <View style={styles.user_icons_holder}>
-                                        <View style={styles.user_icon3}>
-                                            <Text style={styles.user_icon_text3}>ZA</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.group}>
+                                        <Image
+                                            source={{ uri: 'group_icon' }}
+                                            style={styles.group_icon}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={styles.group_name}>Group #1</Text>
+                                        <View style={styles.user_icons_holder}>
+                                            <View style={styles.user_icon3}>
+                                                <Text style={styles.user_icon_text3}>ZA</Text>
+                                            </View>
+                                            <View style={styles.user_icon2}>
+                                                <Text style={styles.user_icon_text2}>AM</Text>
+                                            </View>
+                                            <View style={styles.user_icon}>
+                                                <Text style={styles.user_icon_text}>AW</Text>
+                                            </View>
                                         </View>
-                                        <View style={styles.user_icon2}>
-                                            <Text style={styles.user_icon_text2}>AM</Text>
-                                        </View>
-                                        <View style={styles.user_icon}>
-                                            <Text style={styles.user_icon_text}>AW</Text>
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.group}>
-                                    <Image
-                                        source={{ uri: 'group_icon' }}
-                                        style={styles.group_icon}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.group_name}>Group #1</Text>
-                                    <View style={styles.user_icons_holder}>
-                                        <View style={styles.user_icon3}>
-                                            <Text style={styles.user_icon_text3}>ZA</Text>
-                                        </View>
-                                        <View style={styles.user_icon2}>
-                                            <Text style={styles.user_icon_text2}>AM</Text>
-                                        </View>
-                                        <View style={styles.user_icon}>
-                                            <Text style={styles.user_icon_text}>AW</Text>
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.group}>
-                                    <Image
-                                        source={{ uri: 'group_icon' }}
-                                        style={styles.group_icon}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.group_name}>Group #1</Text>
-                                    <View style={styles.user_icons_holder}>
-                                        <View style={styles.user_icon3}>
-                                            <Text style={styles.user_icon_text3}>ZA</Text>
-                                        </View>
-                                        <View style={styles.user_icon2}>
-                                            <Text style={styles.user_icon_text2}>AM</Text>
-                                        </View>
-                                        <View style={styles.user_icon}>
-                                            <Text style={styles.user_icon_text}>AW</Text>
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                            </ScrollView>
-                        </View>
-                    ) : null
-                }
-            </ScrollView>
-            <TouchableOpacity style={styles.create_trip} onPress={() => {
-                // setText(textValue);
-                const trimmedText = text.trim();
-                if (trimmedText === '') {
+                                    </TouchableOpacity>
+                                </ScrollView>
+                            </View>
+                        ) : null
+                    }
+                </ScrollView>
+                <TouchableOpacity style={styles.create_trip} onPress={() => {
+                    // setText(textValue);
+                    const trimmedText = text.trim();
+                    if (trimmedText === '') {
+                        setText('');
+                    }
+                    addTrip();
                     setText('');
-                }
-                addTrip();
-                setText('');
-                setSelectedDay(new Date().toISOString().slice(0, 10));
-                hideModal?.();
-                navigation.navigate('Trip')
-            }}>
-                <Text style={styles.create_trip_text}>Create Trip</Text>
-            </TouchableOpacity>
-        </View>
+                    setSelectedDay(new Date().toISOString().slice(0, 10));
+                    hideModal?.();
+                    navigation.navigate('Trip')
+                }}>
+                    <Text style={styles.create_trip_text}>Create Trip</Text>
+                </TouchableOpacity>
+            </View>
         </ParentView>
         
     );
