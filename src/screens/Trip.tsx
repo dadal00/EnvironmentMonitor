@@ -31,13 +31,16 @@ const TripScreen = ({ navigation}: Props ) => {
     const database = useDatabase();
     const [modalVisible, setModalVisible] = useState(false);
     const [newStore, setNewStore] = useState(false);
-    const [id, setID] = useState(null);
-    const [store, setStore] = useState(false);
+    const [id, setID] = useState('');
+    // const [store, setStore] = useState(false);
+    const [index, setIndex] = useState(0);
     const [data, setData] = useState<any[]>([]);
     const [placeholder, setPlaceholder] = useState('');
     const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
     const [isEditing, setIsEditing] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
+    const [opened, setOpened] = useState(Array(data.length).fill(false));
+    const [isEditingStore, setEditingStore] = useState(Array(data.length).fill(false));
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -78,14 +81,18 @@ const TripScreen = ({ navigation}: Props ) => {
         fetchTrip();
     }, []);
 
-    const handleSave = () => {
+    const handleSave = (index?: number) => {
         const trimmedText = placeholder.trim();
         if (trimmedText === '') {
             setPlaceholder('');
         } else {
             setPlaceholder(trimmedText);
         }
-        setIsEditing(false);
+        if (index) {
+            toggleEdit(index);
+        } else {
+            setIsEditing(false);
+        }
         Keyboard.dismiss();
     };
 
@@ -103,9 +110,25 @@ const TripScreen = ({ navigation}: Props ) => {
         }
     }
 
-    const push = async () => {
-        if (id) {
+    const pushChange = async (id: string, placeholder: string) => {
+        try {
+            await database?.write(async () => {
+                const store = await database?.collections .get< Store >('stores') .find(id);
+                await store?.update((record) => {
+                    record.name = placeholder;
+                });
+            });
+        } catch (error) {
+            console.error('Failed to add store:', error);
+        }
+    }
 
+    const push = async (id?: string) => {
+        if (id) {
+            if (placeholder != data[index].name) {
+                pushChange(id, placeholder);
+            }
+            setPlaceholder('');
         } else{
             if (placeholder != '') {
                 pushNew();
@@ -121,16 +144,15 @@ const TripScreen = ({ navigation}: Props ) => {
 
     const ParentView: React.FC<ParentViewProps> = ({ children }) => 
     {
-        if (isEditing) {
+        if (isEditing || isEditingStore[index]) {
             return (
-              <TouchableWithoutFeedback onPress={() => {
-                    Keyboard.dismiss; 
-                    handleSave();
-                    setIsEditing(false);
-                    push();
-                    fetchTrip();
-                }} 
-                accessible={false}
+                <TouchableWithoutFeedback onPress={() => {
+                        Keyboard.dismiss; 
+                        handleSave(index);
+                        push(id);
+                        fetchTrip();
+                    }} 
+                    accessible={false}
                 >
                     <View style={styles.container}>
                         {children}
@@ -144,7 +166,19 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
               );
         }
-    }   
+    }
+    
+    const toggleStyle = (index: number) => {
+        const newArray = [...opened] as unknown as boolean[];
+        newArray[index] = !opened[index]; // Toggle the value
+        setOpened(newArray);
+    };
+
+    const toggleEdit = (index: number) => {
+        const newArray = [...isEditingStore] as unknown as boolean[];
+        newArray[index] = !isEditingStore[index]; // Toggle the value
+        setEditingStore(newArray);
+    };
 
     return (
         <ParentView>
@@ -188,19 +222,11 @@ const TripScreen = ({ navigation}: Props ) => {
             </View>
             <View style={styles.middleContainer}>
                 <ScrollView ref={scrollViewRef}>
-                    {data.map((item, index) => (
-                        <View key={index} style={styles.unopened_list}>
-                            <View style={styles.caveInCorner}>
-                                <View style={styles.triangle}/>
-                            </View>
-                            <Text style={styles.unopened_title}>{item.name}</Text>
-                        </View>
-                    ))}
                     { newStore ? (
                         <View style={styles.groceryList}>
                             <TouchableOpacity style={styles.wrapper}>
                                 <TextInput
-                                    onFocus={() => {scrollViewRef?.current?.scrollToEnd({animated: false});}}
+                                    // onFocus={() => {scrollViewRef?.current?.scrollToEnd({animated: false});}}
                                     value={placeholder}
                                     onChangeText={newText => setPlaceholder(newText)}
                                     style={styles.groceryList_title}
@@ -211,7 +237,6 @@ const TripScreen = ({ navigation}: Props ) => {
                                     autoCorrect={false}
                                     autoCapitalize="none"
                                     maxLength={36}
-                                    placeholder='Tap to enter text'
                                 />
                             </TouchableOpacity> 
                             <View style={styles.existing_item}>
@@ -223,6 +248,43 @@ const TripScreen = ({ navigation}: Props ) => {
                             </View>
                         </View> ) : null
                     }
+                    {data.map((item, index) => 
+                        opened[index] ? (
+                            <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleStyle(index);}} style={styles.groceryList} key={index}>
+                                <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleEdit(index); setPlaceholder(data[index].name);}} style={styles.wrapper}>
+                                    {isEditingStore[index] ?
+                                        (<TextInput
+                                            // onFocus={() => {scrollViewRef?.current?.scrollToEnd({animated: false});}}
+                                            value={placeholder}
+                                            onChangeText={newText => setPlaceholder(newText)}
+                                            style={styles.groceryList_title}
+                                            autoFocus = {isEditingStore[index]}
+                                            returnKeyType="done"
+                                            multiline={false}
+                                            onSubmitEditing={() => {handleSave(index); push(item.id); fetchTrip();}}
+                                            autoCorrect={false}
+                                            autoCapitalize="none"
+                                            maxLength={36}
+                                        />) :
+                                        (<Text style={styles.groceryList_title}>{item.name}</Text>)
+                                    }
+                                </TouchableOpacity> 
+                                <View style={styles.existing_item}>
+                                    <View style={styles.bullet_block}>
+                                        <Image source={{ uri: 'new_bullet'}}
+                                        style={styles.bullet_pic}
+                                        resizeMode='contain'/>
+                                    </View>
+                                </View>
+                            </TouchableOpacity> ) : (
+                            <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleStyle(index);}} key={index} style={opened[index] ? styles.groceryList : styles.unopened_list}>
+                                <View style={styles.caveInCorner}>
+                                    <View style={styles.triangle}/>
+                                </View>
+                                <Text style={styles.unopened_title}>{item.name}</Text>
+                            </TouchableOpacity>
+                        )
+                    )}
                 </ScrollView>
                 
             </View>
@@ -533,7 +595,7 @@ const styles = StyleSheet.create({
         maxHeight: SCREEN_HEIGHT * 0.6,
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
-        backgroundColor: 'blue',
+        backgroundColor: 'pink',
     },
     tag: {
         flexShrink: 1,
