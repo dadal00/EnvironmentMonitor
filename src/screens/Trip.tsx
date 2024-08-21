@@ -37,9 +37,7 @@ const TripScreen = ({ navigation}: Props ) => {
     const [placeholder, setPlaceholder] = useState('');
     const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
     const [isEditing, setIsEditing] = useState(false);
-    const scrollPosition = useRef(0);
     const scrollViewRef = useRef<ScrollView>(null);
-    const [hasScrolledBack, setHasScrolledBack] = useState(false);
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -78,10 +76,6 @@ const TripScreen = ({ navigation}: Props ) => {
 
     useEffect(() => {
         fetchTrip();
-        // if (scrollViewRef.current && !hasScrolledBack) {
-        //     scrollViewRef.current.scrollTo({ y: scrollPosition.current, animated: false });
-        //     setHasScrolledBack(true); // Ensure this only happens once
-        // }
     }, []);
 
     const handleSave = () => {
@@ -150,13 +144,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
               );
         }
-    }
-    
-    const handleScroll = (event: { nativeEvent: { contentOffset: { y: number; }; }; }) => {
-        if (!hasScrolledBack) {
-            scrollPosition.current = event.nativeEvent.contentOffset.y;
-        }
-    };
+    }   
 
     return (
         <ParentView>
@@ -199,8 +187,7 @@ const TripScreen = ({ navigation}: Props ) => {
                 </View>
             </View>
             <View style={styles.middleContainer}>
-                <ScrollView ref={scrollViewRef} onScroll={handleScroll} >
-                    
+                <ScrollView ref={scrollViewRef}>
                     {data.map((item, index) => (
                         <View key={index} style={styles.unopened_list}>
                             <View style={styles.caveInCorner}>
@@ -209,8 +196,7 @@ const TripScreen = ({ navigation}: Props ) => {
                             <Text style={styles.unopened_title}>{item.name}</Text>
                         </View>
                     ))}
-                </ScrollView>
-                { newStore ? (
+                    { newStore ? (
                         <View style={styles.groceryList}>
                             <TouchableOpacity style={styles.wrapper}>
                                 <TextInput
@@ -237,9 +223,11 @@ const TripScreen = ({ navigation}: Props ) => {
                             </View>
                         </View> ) : null
                     }
+                </ScrollView>
+                
             </View>
             <View style={styles.bottom_container}>
-                <TouchableOpacity style={styles.new_store} onPress={() => {setHasScrolledBack(false); setNewStore(true); setIsEditing(true); }}>
+                <TouchableOpacity style={styles.new_store} onPress={() => {setNewStore(true); setIsEditing(true); }}>
                     <Text style={styles.plus_sign}>+</Text>
                 </TouchableOpacity>
             </View>
@@ -279,9 +267,7 @@ const TripScreen = ({ navigation}: Props ) => {
                     </View>
                 </View>
             </Modal>
-        </ParentView>
-        
-        
+        </ParentView>  
     );
 };
 
@@ -368,6 +354,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         width: SCREEN_WIDTH * 0.24, // Set width and height according to your needs
         height: SCREEN_WIDTH * 0.24,
+        backgroundColor: 'white', 
         ...Platform.select({
           ios: {
             shadowColor: '#D4D3CB',
@@ -467,7 +454,6 @@ const styles = StyleSheet.create({
         color: '#2F2F2F',
     },
     unopened_list: {
-        // marginTop: SCREEN_WIDTH * 0.03,
         marginBottom: SCREEN_WIDTH * 0.03,
         width: '98.5%',
         flexGrow: 1,
@@ -512,6 +498,8 @@ const styles = StyleSheet.create({
     wrapper: {
         borderBottomColor: '#BFBEB5',
         borderBottomWidth: SCREEN_WIDTH * 0.005,
+        width: SCREEN_WIDTH * 0.735,
+        // backgroundColor: 'blue',
     },
     groceryList_title: {
         fontSize: SCREEN_WIDTH * 0.075,
@@ -542,15 +530,9 @@ const styles = StyleSheet.create({
     },
     middleContainer: {
         width: '87%',
-        // height: '56%',
-        maxHeight: SCREEN_HEIGHT * 0.3,
+        maxHeight: SCREEN_HEIGHT * 0.6,
         alignSelf: 'center',
         marginBottom: SCREEN_WIDTH * 0.025,
-        // flex: 1,
-        // flexShrink: 1,
-        // flexGrow: 1,
-        // minHeight: 100, // Starting small
-        // maxHeight: 300,
         backgroundColor: 'blue',
     },
     tag: {
@@ -583,15 +565,8 @@ const styles = StyleSheet.create({
     },
     trip_title: {
         fontSize: SCREEN_WIDTH * 0.1,
-        // fontWeight: '400',
         fontFamily: 'DMSans-Medium',
         color: '#2F2F2F',
-        
-        // textOverflow: 'ellipsis',
-        // backgroundColor: 'blue',
-        // position: 'absolute',
-        // bottom: 0,
-
     },
     trip_header: {
         position: 'relative',
