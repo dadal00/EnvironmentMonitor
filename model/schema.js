@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export default appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'trips',
@@ -17,6 +17,13 @@ export default appSchema({
         { name: 'trip_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'touched', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'groceries',
+      columns: [
+        { name: 'store_id', type: 'string', isIndexed: true },
+        { name: 'name', type: 'string' },
       ],
     }),
   ]

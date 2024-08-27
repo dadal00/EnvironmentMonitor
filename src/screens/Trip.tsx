@@ -40,7 +40,8 @@ const TripScreen = ({ navigation}: Props ) => {
     const [isEditing, setIsEditing] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const [opened, setOpened] = useState(Array(data.length).fill(false));
-    const [isEditingStore, setEditingStore] = useState(Array(data.length).fill(false));
+    const [isEditingStore, setEditingStore] = useState<boolean[]>([]);
+    const [storePlaceholders, setStorePlaceholders] = useState<string[]>([]);
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -71,6 +72,8 @@ const TripScreen = ({ navigation}: Props ) => {
                 setTrip(trips[0]);
                 const stores = await trips[0]?.stores.fetch();
                 setData(stores);
+                setStorePlaceholders(stores.map((item: { name: string; }) => item.name));
+                setEditingStore(Array(stores.length).fill(false));
             }
         } catch (error) {
             console.error('Failed to fetch trips:', error);
@@ -82,17 +85,22 @@ const TripScreen = ({ navigation}: Props ) => {
     }, []);
 
     const handleSave = (index?: number) => {
-        const trimmedText = placeholder.trim();
-        if (trimmedText === '') {
-            setPlaceholder('');
-        } else {
-            setPlaceholder(trimmedText);
-        }
         if (index) {
-            toggleEdit(index);
+            const trimmedText = storePlaceholders[index].trim();
+            if (trimmedText === '') {
+                placeholderChange(index, '');
+            } else {
+                placeholderChange(index, trimmedText);
+            }
         } else {
-            setIsEditing(false);
+            const trimmedText = placeholder.trim();
+            if (trimmedText === '') {
+                setPlaceholder('');
+            } else {
+                setPlaceholder(trimmedText);
+            }
         }
+        setIsEditing(false);
         Keyboard.dismiss();
     };
 
@@ -123,12 +131,25 @@ const TripScreen = ({ navigation}: Props ) => {
         }
     }
 
-    const push = async (id?: string) => {
+    const deleteStore = async (id: string) => {
+        try {
+            await database?.write(async () => {
+                const store = await database?.collections .get< Store >('stores') .find(id);
+                await store?.markAsDeleted();
+            });
+        } catch (error) {
+            console.error('Failed to add store:', error);
+        }
+    }
+
+    const push = async (id?: string, index?: number) => {
         if (id) {
-            if (placeholder != data[index].name) {
-                pushChange(id, placeholder);
+            if (storePlaceholders[index as number] == '') { 
+                deleteStore(id);
             }
-            setPlaceholder('');
+            else if (storePlaceholders[index as number] != data[index as number].name) {
+                pushChange(id, storePlaceholders[index as number]);
+            }
         } else{
             if (placeholder != '') {
                 pushNew();
@@ -144,12 +165,19 @@ const TripScreen = ({ navigation}: Props ) => {
 
     const ParentView: React.FC<ParentViewProps> = ({ children }) => 
     {
-        if (isEditing || isEditingStore[index]) {
+        if (isEditing) {
             return (
                 <TouchableWithoutFeedback onPress={() => {
                         Keyboard.dismiss; 
-                        handleSave(index);
-                        push(id);
+                        if (!newStore) {
+                            editOFF(index);
+                            handleSave(index);
+                            push(id, index);
+                        } else {
+                            setIsEditing(false);
+                            handleSave();
+                            push();
+                        }
                         fetchTrip();
                     }} 
                     accessible={false}
@@ -159,7 +187,8 @@ const TripScreen = ({ navigation}: Props ) => {
                     </View >
               </TouchableWithoutFeedback>
             );
-        } else {
+        } 
+        else {
             return (
                 <View style={styles.container}>
                     {children}
@@ -174,15 +203,44 @@ const TripScreen = ({ navigation}: Props ) => {
         setOpened(newArray);
     };
 
-    const toggleEdit = (index: number) => {
+    const placeholderChange = (index: number, hold: string) => {
+        const newArray = [...storePlaceholders] as unknown as string[];
+        newArray[index] = hold; // Toggle the value
+        setStorePlaceholders(newArray);
+    };
+
+    const editON = (index: number) => {
         const newArray = [...isEditingStore] as unknown as boolean[];
-        newArray[index] = !isEditingStore[index]; // Toggle the value
+        newArray[index] = true; // Toggle the value
+        setEditingStore(newArray);
+    };
+
+    const editOFF = (index: number) => {
+        const newArray = [...isEditingStore] as unknown as boolean[];
+        newArray[index] = false; // Toggle the value
         setEditingStore(newArray);
     };
 
     return (
         <ParentView>
-            <TouchableOpacity onPress={() => navigation.navigate('Fridge')} style={styles.navButton}>
+            <TouchableOpacity onPress={() => {
+                if (isEditing) {
+                    if (!newStore) {
+                        editOFF(index);
+                        handleSave(index);
+                        push(id, index);
+                    } else {
+                        setIsEditing(false);
+                        handleSave();
+                        push();
+                    }
+                    fetchTrip();
+                } else {
+                    navigation.navigate('Fridge');
+                }
+            }} style={styles.navButton}
+            activeOpacity={isEditing ? 1 : 0.2}
+            >
                 <Image 
                     source={{uri: 'fridge'}}
                     style={styles.navButton_image} 
@@ -190,8 +248,25 @@ const TripScreen = ({ navigation}: Props ) => {
                 />
             </TouchableOpacity>
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => {setModalVisible(true); setCurrentOverlayScreen('Groups');
-                }} style={styles.icon_container}>
+                <TouchableOpacity onPress={() => {
+                    if (isEditing) {
+                        if (!newStore) {
+                            editOFF(index);
+                            handleSave(index);
+                            push(id, index);
+                        } else {
+                            setIsEditing(false);
+                            handleSave();
+                            push();
+                        }
+                        fetchTrip();
+                    } else {
+                        setModalVisible(true); 
+                        setCurrentOverlayScreen('Groups');
+                    }
+                }} style={styles.icon_container}
+                    activeOpacity={isEditing ? 1 : 0.2}
+                >
                     <Image
                         source={{ uri: 'default_trip_icon' }}
                         style={styles.image}
@@ -248,20 +323,63 @@ const TripScreen = ({ navigation}: Props ) => {
                             </View>
                         </View> ) : null
                     }
-                    {data.map((item, index) => 
-                        opened[index] ? (
-                            <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleStyle(index);}} style={styles.groceryList} key={index}>
-                                <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleEdit(index); setPlaceholder(data[index].name);}} style={styles.wrapper}>
-                                    {isEditingStore[index] ?
+                    {data.map((item, local_index) => 
+                        opened[local_index] ? (
+                            <TouchableOpacity onPress={() => {
+                                if (isEditing) {
+                                    if (!newStore) {
+                                        editOFF(index);
+                                        handleSave(index);
+                                        push(id, index);
+                                    } else {
+                                        setIsEditing(false);
+                                        handleSave();
+                                        push();
+                                    }
+                                    fetchTrip();
+                                } else {
+                                    setIndex(local_index); 
+                                    setID(item.id); 
+                                    toggleStyle(local_index);
+                                    setNewStore(false);
+                                }
+                            }} 
+                                style={styles.groceryList} 
+                                key={local_index}
+                                activeOpacity={isEditing ? 1 : 0.2}
+                                >
+                                <TouchableOpacity onPress={() => {
+                                    if (isEditing) {
+                                        if (!newStore) {
+                                            editOFF(index);
+                                            handleSave(index);
+                                            push(id, index);
+                                        } else {
+                                            setIsEditing(false);
+                                            handleSave();
+                                            push();
+                                        }
+                                        fetchTrip();
+                                    } else {
+                                        setIndex(local_index); 
+                                        setID(item.id); 
+                                        editON(local_index); 
+                                        setIsEditing(true); 
+                                        setNewStore(false);
+                                    }
+                                    }} style={styles.wrapper}
+                                    activeOpacity={isEditing ? 1 : 0.2}
+                                    >
+                                    {isEditingStore[local_index] ?
                                         (<TextInput
                                             // onFocus={() => {scrollViewRef?.current?.scrollToEnd({animated: false});}}
-                                            value={placeholder}
-                                            onChangeText={newText => setPlaceholder(newText)}
+                                            value={storePlaceholders[local_index]}
+                                            onChangeText={newText => placeholderChange(local_index, newText)}
                                             style={styles.groceryList_title}
-                                            autoFocus = {isEditingStore[index]}
+                                            autoFocus = {isEditingStore[local_index]}
                                             returnKeyType="done"
                                             multiline={false}
-                                            onSubmitEditing={() => {handleSave(index); push(item.id); fetchTrip();}}
+                                            onSubmitEditing={() => {editOFF(local_index); handleSave(local_index); push(item.id, local_index); fetchTrip();}}
                                             autoCorrect={false}
                                             autoCapitalize="none"
                                             maxLength={36}
@@ -269,15 +387,52 @@ const TripScreen = ({ navigation}: Props ) => {
                                         (<Text style={styles.groceryList_title}>{item.name}</Text>)
                                     }
                                 </TouchableOpacity> 
-                                <View style={styles.existing_item}>
+                                <TouchableOpacity style={styles.existing_item}
+                                    onPress={() => {
+                                        if (isEditing) {
+                                            if (!newStore) {
+                                                editOFF(index);
+                                                handleSave(index);
+                                                push(id, index);
+                                            } else {
+                                                setIsEditing(false);
+                                                handleSave();
+                                                push();
+                                            }
+                                            fetchTrip();
+                                        } else {
+                                            console.log("new store");
+                                        }
+                                    }}
+                                    activeOpacity={isEditing ? 1 : 0.2}
+                                >
                                     <View style={styles.bullet_block}>
                                         <Image source={{ uri: 'new_bullet'}}
                                         style={styles.bullet_pic}
                                         resizeMode='contain'/>
                                     </View>
-                                </View>
+                                </TouchableOpacity>
                             </TouchableOpacity> ) : (
-                            <TouchableOpacity onPress={() => {setIndex(index); setID(item.id); toggleStyle(index);}} key={index} style={opened[index] ? styles.groceryList : styles.unopened_list}>
+                            <TouchableOpacity onPress={() => {
+                                if (isEditing) {
+                                    if (!newStore) {
+                                        editOFF(index);
+                                        handleSave(index);
+                                        push(id, index);
+                                    } else {
+                                        setIsEditing(false);
+                                        handleSave();
+                                        push();
+                                    }
+                                    fetchTrip();
+                                } else {
+                                    setIndex(local_index); 
+                                    setID(item.id); 
+                                    toggleStyle(local_index);
+                                }
+                                }} key={local_index} style={opened[local_index] ? styles.groceryList : styles.unopened_list}
+                                activeOpacity={isEditing ? 1 : 0.2}
+                                >
                                 <View style={styles.caveInCorner}>
                                     <View style={styles.triangle}/>
                                 </View>
@@ -289,7 +444,26 @@ const TripScreen = ({ navigation}: Props ) => {
                 
             </View>
             <View style={styles.bottom_container}>
-                <TouchableOpacity style={styles.new_store} onPress={() => {setNewStore(true); setIsEditing(true); }}>
+                <TouchableOpacity style={styles.new_store} onPress={() => {
+                    if (isEditing) {
+                        if (!newStore) {
+                            editOFF(index);
+                            handleSave(index);
+                            push(id, index);
+                        } else {
+                            setIsEditing(false);
+                            handleSave();
+                            push();
+                        }
+                        fetchTrip();
+                    } else {
+                        editOFF(index); 
+                        setNewStore(true); 
+                        setIsEditing(true); 
+                    }
+                    }}
+                    activeOpacity={isEditing ? 1 : 0.2}
+                    >
                     <Text style={styles.plus_sign}>+</Text>
                 </TouchableOpacity>
             </View>
