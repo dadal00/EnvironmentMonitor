@@ -11,6 +11,8 @@ import { useDatabase } from '../components/DatabaseContext';
 import Trip from '../../model/Trip';
 import Store from '../../model/Store';
 import { FlashList } from '@shopify/flash-list';
+import Grocery from '../../model/Grocery';
+import { Q } from '@nozbe/watermelondb';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trip'>;
 
@@ -29,19 +31,28 @@ const formatDate = (dateString: string): string => {
 const TripScreen = ({ navigation}: Props ) => {
     const [trip, setTrip] = useState<Trip | null>(null);
     const database = useDatabase();
+
     const [modalVisible, setModalVisible] = useState(false);
-    const [newStore, setNewStore] = useState(false);
+    const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
+
     const [id, setID] = useState('');
-    // const [store, setStore] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+
+    const [newStore, setNewStore] = useState(false);
+    const [placeholder, setPlaceholder] = useState('');
+
     const [index, setIndex] = useState(0);
     const [data, setData] = useState<any[]>([]);
-    const [placeholder, setPlaceholder] = useState('');
-    const { currentOverlayScreen, setCurrentOverlayScreen } = React.useContext(OverlayContext);
-    const [isEditing, setIsEditing] = useState(false);
-    const scrollViewRef = useRef<ScrollView>(null);
-    const [opened, setOpened] = useState(Array(data.length).fill(false));
+    const [opened, setOpened] = useState<boolean[]>([]);
     const [isEditingStore, setEditingStore] = useState<boolean[]>([]);
     const [storePlaceholders, setStorePlaceholders] = useState<string[]>([]);
+
+    const [newGrocery, setNewGrocery] = useState<boolean[]>([]);
+    const [groceryPlaceholders, setgroceryPlaceholders] = useState<string[]>([]);
+
+    const [data_groceries, setDataGroceries] = useState<any[]>([]);
+
+    const scrollViewRef = useRef<ScrollView>(null);
     
     const renderOverlayContent = () => {
         switch (currentOverlayScreen) {
@@ -74,6 +85,21 @@ const TripScreen = ({ navigation}: Props ) => {
                 setData(stores);
                 setStorePlaceholders(stores.map((item: { name: string; }) => item.name));
                 setEditingStore(Array(stores.length).fill(false));
+                setOpened(Array(stores.length).fill(false));
+                const groceries = await Promise.all(
+                    stores.map(async (store: {id: string}) => {
+                        const store_groceries = await database?.collections
+                            .get<Grocery>('groceries')
+                            ?.query(
+                                Q.where('store_id', store.id)
+                            )
+                            .fetch();
+                        return store_groceries;
+                    })
+                );
+                setDataGroceries(groceries);
+                setNewGrocery(Array(stores.length).fill(false));
+                setgroceryPlaceholders(Array(stores.length).fill(""));
             }
         } catch (error) {
             console.error('Failed to fetch trips:', error);
@@ -135,7 +161,8 @@ const TripScreen = ({ navigation}: Props ) => {
         try {
             await database?.write(async () => {
                 const store = await database?.collections .get< Store >('stores') .find(id);
-                await store?.markAsDeleted();
+                const groceries = await store?.groceries.fetch();
+                await database.batch(...groceries.map((b: { prepareDestroyPermanently: () => any; })=> b.prepareDestroyPermanently()), store?.prepareDestroyPermanently());
             });
         } catch (error) {
             console.error('Failed to add store:', error);
@@ -213,6 +240,12 @@ const TripScreen = ({ navigation}: Props ) => {
         const newArray = [...isEditingStore] as unknown as boolean[];
         newArray[index] = true; // Toggle the value
         setEditingStore(newArray);
+    };
+
+    const newGroceryON = (index: number) => {
+        const newArray = [...newGrocery] as unknown as boolean[];
+        newArray[index] = true; // Toggle the value
+        setNewGrocery(newArray);
     };
 
     const editOFF = (index: number) => {
@@ -387,6 +420,17 @@ const TripScreen = ({ navigation}: Props ) => {
                                         (<Text style={styles.groceryList_title}>{item.name}</Text>)
                                     }
                                 </TouchableOpacity> 
+                                { newGrocery[local_index] ? (
+                                    <View style={styles.existing_item}>
+                                        <View style={styles.bullet_block}>
+                                            <Image source={{ uri: 'existing_bullet'}}
+                                            style={styles.bullet_pic}
+                                            resizeMode='contain'/>
+                                        </View>
+                                        <Text style={styles.bullet_text}>Eggs</Text>
+                                    </View> ) 
+                                    : null
+                                }
                                 <TouchableOpacity style={styles.existing_item}
                                     onPress={() => {
                                         if (isEditing) {
@@ -401,7 +445,7 @@ const TripScreen = ({ navigation}: Props ) => {
                                             }
                                             fetchTrip();
                                         } else {
-                                            console.log("new store");
+                                            newGroceryON(local_index);
                                         }
                                     }}
                                     activeOpacity={isEditing ? 1 : 0.2}
@@ -440,8 +484,7 @@ const TripScreen = ({ navigation}: Props ) => {
                             </TouchableOpacity>
                         )
                     )}
-                </ScrollView>
-                
+                </ScrollView>               
             </View>
             <View style={styles.bottom_container}>
                 <TouchableOpacity style={styles.new_store} onPress={() => {
